@@ -1,15 +1,9 @@
+from functools import lru_cache
 from pathlib import Path
 from PIL import ImageFont
 
 
-def read_font(size: int) -> ImageFont.FreeTypeFont:
-    """
-    優先順位:
-    1. Futura Medium 系フォント (macOS / Windows)
-    2. ./fonts/Jost-VariableFont_wght.ttf
-    3. PIL default font
-    """
-
+def find_font_path() -> str | None:
     futura_candidates = [
         # macOS
         "/System/Library/Fonts/Supplemental/Futura.ttc",
@@ -21,27 +15,32 @@ def read_font(size: int) -> ImageFont.FreeTypeFont:
         "C:/Windows/Fonts/FUTURA.TTF",
         "C:/Windows/Fonts/futura medium bt.ttf",
 
-        # Linux (もし手動導入されている場合)
+        # GNU/Linux
         "/usr/share/fonts/truetype/futura/Futura.ttc",
         "/usr/local/share/fonts/Futura.ttc",
     ]
 
-    # Futura を優先
     for path in futura_candidates:
-        try:
-            if Path(path).exists():
-                return ImageFont.truetype(path, size)
-        except (IOError, OSError):
-            pass
+        if Path(path).exists():
+            return path
 
-    # fallback: local Jost Variable Font
     jost_path = Path("./fonts/Jost-VariableFont_wght.ttf")
-
     if jost_path.exists():
-        try:
-            return ImageFont.truetype(str(jost_path), size)
-        except (IOError, OSError):
-            pass
+        return str(jost_path)
 
-    print("Warning: Failed to load Futura and Jost fonts. Using default font.")
-    return ImageFont.load_default()
+    return None
+
+
+@lru_cache(maxsize=None)
+def read_font(size: int) -> ImageFont.FreeTypeFont:
+    font_path = find_font_path()
+
+    if font_path is None:
+        print("Warning: Failed to load Futura and Jost fonts. Using default font.")
+        return ImageFont.load_default()
+
+    try:
+        return ImageFont.truetype(font_path, size)
+    except (IOError, OSError):
+        print(f"Warning: Failed to load font from {font_path}. Using default font.")
+        return ImageFont.load_default()
