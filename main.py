@@ -47,7 +47,7 @@ def make_calendar(year: int, month: int) -> None:
             h=weekdays_h,
             text=text,
             text_size=12,
-            reverse=reverse
+            red=reverse
         )
 
     # 日付部分のグリッド
@@ -67,7 +67,7 @@ def make_calendar(year: int, month: int) -> None:
                 h=date_h,
                 text="" if day == 0 else str(day),
                 text_size=12,
-                reverse=reverse
+                red=reverse
             )
 
     output_dir = os.path.join(os.path.dirname(__file__), "calendars")
