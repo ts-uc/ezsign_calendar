@@ -1,5 +1,5 @@
-This project includes the "Jersey 10" font
-designed by Sarah Cadigan-Fried.
+This project includes the "Jost" font
+designed by Owen Earl.
 
 Licensed under the SIL Open Font License 1.1.
 https://openfontlicense.org/
