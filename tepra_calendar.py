@@ -10,17 +10,17 @@ import read_font
 
 class Draw:
     def __init__(self, w, h):
-        self.font_j10 = read_font.read_font(10)
         self.img = Image.new("1", (w, h), 1)
         self.draw = ImageDraw.Draw(self.img)
 
-    def draw_cell(self, x: int, y: int, w: int, h: int, text: str, reverse: bool = False):
+    def draw_cell(self, x: int, y: int, w: int, h: int, text: str, text_size: int, reverse: bool = False):
+        font = read_font.read_font(text_size)
         if reverse:
             self.draw.rectangle(
                 (x, y, x + w - 1, y + h - 1),
                 fill=0
             )
-        bbox = self.draw.textbbox((0, 0), text, font=self.font_j10)
+        bbox = self.draw.textbbox((0, 0), text, font=font)
         text_w = bbox[2] - bbox[0]
         text_h = bbox[3] - bbox[1]
         tx = x + (w - text_w) // 2 - bbox[0]
@@ -29,7 +29,7 @@ class Draw:
         self.draw.text(
             (tx, ty),
             text,
-            font=self.font_j10,
+            font=font,
             fill=1 if reverse else 0
         )
 
@@ -62,7 +62,8 @@ def make_calendar(year: int, month: int) -> None:
         y=0,
         w=width,
         h=header_h,
-        text=text
+        text=text,
+        text_size=12
     )
 
     # 曜日部分のグリッド
@@ -76,6 +77,7 @@ def make_calendar(year: int, month: int) -> None:
             w=cell_w,
             h=weekdays_h,
             text=text,
+            text_size=12,
             reverse=reverse
         )
 
@@ -95,6 +97,7 @@ def make_calendar(year: int, month: int) -> None:
                 w=cell_w,
                 h=date_h,
                 text="" if day == 0 else str(day),
+                text_size=12,
                 reverse=reverse
             )
 
