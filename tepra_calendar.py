@@ -5,12 +5,12 @@ import jpholiday
 import argparse
 import os
 from pathlib import Path
+import read_font
 
 
 class Draw:
     def __init__(self, w, h):
-        font_path = os.path.join(os.path.dirname(__file__), "fonts", "Jersey10-Regular.ttf")
-        self.font_j10 = read_font(font_path, 19)
+        self.font_j10 = read_font.read_font(10)
         self.img = Image.new("1", (w, h), 1)
         self.draw = ImageDraw.Draw(self.img)
 
@@ -33,14 +33,6 @@ class Draw:
 
     def save(self, out: str):
         self.img.save(out)
-
-
-def read_font(path: str, size: int) -> ImageFont.FreeTypeFont:
-    try:
-        return ImageFont.truetype(path, size)
-    except (IOError, OSError):
-        print(f"Warning: Failed to load font from {path}. Using default font.")
-        return ImageFont.load_default()
 
 
 def make_calendar(year: int, month: int) -> None:
