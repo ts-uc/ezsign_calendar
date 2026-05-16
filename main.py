@@ -3,6 +3,7 @@ import datetime
 import jpholiday
 import argparse
 import os
+import sxtwl
 from draw import Draw
 from qreki import Kyureki
 
@@ -10,6 +11,11 @@ WIDTH = 400
 HEIGHT = 300
 HEADER_H = 90
 
+JQ = [
+    "冬至", "小寒", "大寒", "立春", "雨水", "啓蟄", "春分", "清明",
+    "穀雨", "立夏", "小満", "芒種", "夏至", "小暑", "大暑", "立秋",
+    "処暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪"
+]
 
 def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     cal_w = 18
@@ -145,6 +151,17 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
                     text_size=8,
                     anchor="rt"
                 )
+
+                # 二十四節気
+                sd = sxtwl.fromSolar(year, month, day)
+
+                if sd.hasJieQi():
+                    draw.draw_text(
+                        x=cx + cw - 3, y=cy+4 + 10,
+                        text=JQ[sd.getJieQi()],
+                        text_size=8,
+                        anchor="rt"
+                    )
 
     return main_cal_h
 
