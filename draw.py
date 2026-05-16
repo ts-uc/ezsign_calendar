@@ -4,6 +4,9 @@ import os
 
 class Draw:
     def __init__(self, w, h):
+        font_path_misaki = os.path.join(os.path.dirname(
+            __file__), "fonts", "misaki_gothic_2nd.ttf")
+        self.font_misaki = read_font(font_path_misaki, 8)
         font_path_j10 = os.path.join(os.path.dirname(
             __file__), "fonts", "Jersey10-Regular.ttf")
         self.font_j10 = read_font(font_path_j10, 19)
@@ -34,7 +37,9 @@ class Draw:
         # セルの中央座標
 
         font = None
-        if text_size <= 12:
+        if text_size == 8:
+            font = self.font_misaki
+        elif text_size <= 12:
             font = self.font_j10
         elif text_size <= 17:
             font = self.font_j15
