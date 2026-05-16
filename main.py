@@ -125,11 +125,11 @@ def make_calendar(year: int, month: int) -> None:
 
     # 高さ指定
     # 5週以下なら5週分、6週以上なら6週分の高さを確保
-    margin_top_h = 10
-    header_h = 80
-    margin_middle_h = 5
-    main_cal_h = height - header_h - margin_top_h - margin_middle_h
+    header_h = 90
+    main_cal_h = height - header_h
 
+
+    sub_cal_h = header_h - 10
     sub_cal_w = 16*7
 
     draw = Draw(width, height)
@@ -139,7 +139,7 @@ def make_calendar(year: int, month: int) -> None:
     draw.draw_text(
         x=0,
         y=0,
-        w=width,
+        w=width * 2 // 7,
         h=header_h,
         text=text,
         text_size=72
@@ -150,10 +150,10 @@ def make_calendar(year: int, month: int) -> None:
         draw=draw,
         year=next_year,
         month=next_month,
-        x=width - sub_cal_w - 10,
-        y=margin_top_h,
+        x=width - sub_cal_w - 5,
+        y=5,
         w=sub_cal_w,
-        h=header_h
+        h=sub_cal_h
     )
 
     # メインカレンダー
@@ -162,7 +162,7 @@ def make_calendar(year: int, month: int) -> None:
         year=year,
         month=month,
         x=0,
-        y=margin_top_h + header_h + margin_middle_h,
+        y=header_h,
         w=width,
         h=main_cal_h
     )
