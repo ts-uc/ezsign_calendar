@@ -4,6 +4,8 @@ import jpholiday
 import argparse
 import os
 import sxtwl
+from japanera import EraDate
+
 from skyfield.api import load
 from skyfield import almanac
 from draw import Draw
@@ -18,6 +20,23 @@ JQ = [
     "穀雨", "立夏", "小満", "芒種", "夏至", "小暑", "大暑", "立秋",
     "処暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪"
 ]
+
+KANSHI = [
+    "甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉",
+    "甲戌", "乙亥", "丙子", "丁丑", "戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未",
+    "甲申", "乙酉", "丙戌", "丁亥", "戊子", "己丑", "庚寅", "辛卯", "壬辰", "癸巳",
+    "甲午", "乙未", "丙申", "丁酉", "戊戌", "己亥", "庚子", "辛丑", "壬寅", "癸卯",
+    "甲辰", "乙巳", "丙午", "丁未", "戊申", "己酉", "庚戌", "辛亥", "壬子", "癸丑",
+    "甲寅", "乙卯", "丙辰", "丁巳", "戊午", "己未", "庚申", "辛酉", "壬戌", "癸亥",
+]
+
+JM = ["", "睦月", "如月", "弥生", "卯月", "皐月", "水無月", "文月", "葉月", "長月", "神無月", "霜月", "師走"]
+
+def to_zenkaku(s: str) -> str:
+    return s.translate(str.maketrans(
+        "0123456789",
+        "０１２３４５６７８９"
+    ))
 
 # 初期化（1回だけ）
 ts = load.timescale()
@@ -236,9 +255,30 @@ def make_calendar(year: int, month: int) -> None:
     # 年月表示
     draw.draw_text(
         x=80,
-        y=75,
+        y=65,
         text=str(year),
         text_size=20,
+        anchor="rb"
+    )
+
+    # 和暦
+    d = datetime.date(year, month, 1)
+
+    # 元号名
+    era_name = EraDate.from_date(d).strftime("%-K")
+
+    # 和暦年
+    year_text = EraDate.from_date(d).strftime("%-Y")
+    year_text = "元" if year_text == "1" else to_zenkaku(year_text)
+
+    # 干支
+    kanshi = KANSHI[(d.year - 4) % 60]
+
+    draw.draw_text(
+        x=80,
+        y=75,
+        text=f"{era_name}{year_text}年{kanshi}",
+        text_size=8,
         anchor="rb"
     )
 
@@ -252,9 +292,17 @@ def make_calendar(year: int, month: int) -> None:
 
     draw.draw_text(
         x=160,
-        y=75,
+        y=65,
         text=calendar.month_abbr[month].upper(),
         text_size=20,
+        anchor="lb"
+    )
+
+    draw.draw_text(
+        x=160,
+        y=75,
+        text=JM[month],
+        text_size=8,
         anchor="lb"
     )
 
