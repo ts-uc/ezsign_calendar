@@ -20,10 +20,17 @@ class Draw:
         self.img = Image.new("RGB", (w, h), (255, 255, 255))
         self.draw = ImageDraw.Draw(self.img)
 
-    def draw_text(self, x: int, y: int, w: int, h: int, text: str, text_size: int, red: bool = False):
-        # セルの中央座標
+    def draw_text_center(self, x: int, y: int, w: int, h: int, text: str, text_size: int, red: bool = False):
         cx = x + w // 2
         cy = y + h // 2
+        self.draw_text(
+            x=cx, y=cy, 
+            text=text, text_size=text_size, red=red
+        )
+
+
+    def draw_text(self, x: int, y: int, text: str, text_size: int, red: bool = False, anchor: str = "mm"):
+        # セルの中央座標
 
         font = None
         if text_size <= 12:
@@ -37,11 +44,11 @@ class Draw:
 
         # anchor="mm" で見えているサイズの中央に配置
         self.draw.text(
-            (cx, cy),
+            (x, y),
             text,
             font=font,
             fill=(255, 0, 0) if red else (0, 0, 0),
-            anchor="mm"
+            anchor=anchor
         )
 
     def _draw_dashed_line(
