@@ -1,5 +1,26 @@
-This project includes the "Jost" font
-designed by Owen Earl.
+This project includes the " Jersey 10" font
+designed by Sarah Cadigan-Fried.
+
+Licensed under the SIL Open Font License 1.1.
+https://openfontlicense.org/
+
+
+This project includes the " Jersey 15" font
+designed by Sarah Cadigan-Fried.
+
+Licensed under the SIL Open Font License 1.1.
+https://openfontlicense.org/
+
+
+This project includes the " Jersey 20" font
+designed by Sarah Cadigan-Fried.
+
+Licensed under the SIL Open Font License 1.1.
+https://openfontlicense.org/
+
+
+This project includes the " Jersey 25" font
+designed by Sarah Cadigan-Fried.
 
 Licensed under the SIL Open Font License 1.1.
 https://openfontlicense.org/
