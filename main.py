@@ -5,29 +5,36 @@ import argparse
 import os
 from draw import Draw
 
+WIDTH = 400
+HEIGHT = 300
+HEADER_H = 90
 
-def draw_sub_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int, h: int):
-    cal_w = w // 7
+
+def draw_sub_calendar(draw: Draw, year: int, month: int):
+    cal_w = 20
+    x = WIDTH - cal_w * 7 - 5
 
     cal = calendar.Calendar(firstweekday=6)
     weeks = cal.monthdayscalendar(year, month)
     len_weeks = 5 if len(weeks) <= 5 else 6
-    date_h = h // (1 + len_weeks)
-    weekdays_h = h - date_h * len_weeks
+    date_h = 13 if len_weeks == 5 else 12
+    weekdays_h = date_h
+
+    h = weekdays_h + date_h * len_weeks
+    y = (HEADER_H - h) // 2 + 2
 
     # 曜日部分のグリッド
     weekdays = ["S", "M", "T", "W", "T", "F", "S"]
 
     for c, text in enumerate(weekdays):
         reverse = (c == 0)
-        draw.draw_text_center(
-            x=x + c * cal_w,
+        draw.draw_text(
+            x=x + c * cal_w + cal_w // 2,
             y=y,
-            w=cal_w,
-            h=weekdays_h,
             text=text,
             text_size=10,
-            red=reverse
+            red=reverse,
+            anchor="mt"
         )
 
     # 日付部分のグリッド
@@ -40,31 +47,32 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int,
                 is_holiday = jpholiday.is_holiday(d)
             reverse = (c == 0) or is_holiday
 
-            draw.draw_text_center(
-                x=x + c * cal_w,
+            draw.draw_text(
+                x=x + c * cal_w + cal_w // 2,
                 y=y + weekdays_h + r * date_h,
-                w=cal_w,
-                h=date_h,
                 text="" if day == 0 else str(day),
                 text_size=10,
-                red=reverse
+                red=reverse,
+                anchor="mt"
             )
 
 
-def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int, h: int):
-    cal_w = w // 7
+def draw_main_calendar(draw: Draw, year: int, month: int):
+    cal_w = WIDTH // 7
 
     cal = calendar.Calendar(firstweekday=6)
     weeks = cal.monthdayscalendar(year, month)
     len_weeks = 5 if len(weeks) <= 5 else 6
-    date_h = h * 3 // (2 + len_weeks * 3)
-    weekdays_h = h - date_h * len_weeks
+    date_h = 38 if len_weeks == 5 else 32
+    weekdays_h = 16
+
+    y = HEIGHT - (weekdays_h + date_h * len_weeks)
 
     # 曜日部分のグリッド
     weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
     for c, text in enumerate(weekdays):
-        cx = x + c * cal_w
+        cx = c * cal_w
         cy = y
         cw = cal_w
         ch = weekdays_h
@@ -87,7 +95,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
     # 日付部分のグリッド
     for r, row in enumerate(weeks):
         for c, day in enumerate(row):
-            cx = x + c * cal_w
+            cx = c * cal_w
             cy = y + weekdays_h + r * date_h
             cw = cal_w
             ch = date_h
@@ -115,9 +123,6 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
 
 
 def make_calendar(year: int, month: int) -> None:
-    width = 400
-    height = 300
-
     # 次の月
     next_month = month + 1
     next_year = year
@@ -128,19 +133,18 @@ def make_calendar(year: int, month: int) -> None:
     # 高さ指定
     # 5週以下なら5週分、6週以上なら6週分の高さを確保
     header_h = 90
-    main_cal_h = height - header_h
 
     sub_cal_h = header_h - 10
     sub_cal_w = 18*7
 
-    draw = Draw(width, height)
+    draw = Draw(WIDTH, HEIGHT)
 
     # 年月表示
     text = str(month)
     draw.draw_text_center(
         x=0,
         y=0,
-        w=width * 2 // 7,
+        w=WIDTH * 2 // 7,
         h=header_h,
         text=text,
         text_size=25
@@ -150,11 +154,7 @@ def make_calendar(year: int, month: int) -> None:
     draw_sub_calendar(
         draw=draw,
         year=next_year,
-        month=next_month,
-        x=width - sub_cal_w - 5,
-        y=5,
-        w=sub_cal_w,
-        h=sub_cal_h
+        month=next_month
     )
 
     # メインカレンダー
@@ -162,10 +162,6 @@ def make_calendar(year: int, month: int) -> None:
         draw=draw,
         year=year,
         month=month,
-        x=0,
-        y=header_h,
-        w=width,
-        h=main_cal_h
     )
 
     output_dir = os.path.join(os.path.dirname(__file__), "calendars")
