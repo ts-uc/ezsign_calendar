@@ -16,6 +16,7 @@ class Draw:
         font_path_j25 = os.path.join(os.path.dirname(
             __file__), "fonts", "Jersey25-Regular.ttf")
         self.font_j25 = read_font(font_path_j25, 41)
+        self.font_j50 = read_font(font_path_j25, 82)
 
         self.img = Image.new("RGB", (w, h), (255, 255, 255))
         self.draw = ImageDraw.Draw(self.img)
@@ -39,8 +40,10 @@ class Draw:
             font = self.font_j15
         elif text_size <= 22:
             font = self.font_j20
-        else:
+        elif text_size <= 27:
             font = self.font_j25
+        else:
+            font = self.font_j50
 
         # anchor="mm" で見えているサイズの中央に配置
         self.draw.text(
