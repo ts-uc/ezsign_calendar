@@ -10,18 +10,18 @@ HEIGHT = 300
 HEADER_H = 90
 
 
-def draw_sub_calendar(draw: Draw, year: int, month: int):
+def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     cal_w = 18
     x = WIDTH - cal_w * 7 - 5
 
     cal = calendar.Calendar(firstweekday=6)
     weeks = cal.monthdayscalendar(year, month)
     len_weeks = 5 if len(weeks) <= 5 else 6
-    date_h = 13 if len_weeks == 5 else 12
+    date_h = 12 if len_weeks == 5 else 11
     weekdays_h = date_h
 
     h = weekdays_h + date_h * len_weeks
-    y = (HEADER_H - h) // 2 + 2
+    y = (HEIGHT - main_cal_h - h + 1) // 2
 
     # 月表示
     text = str(month)
@@ -68,16 +68,18 @@ def draw_sub_calendar(draw: Draw, year: int, month: int):
             )
 
 
-def draw_main_calendar(draw: Draw, year: int, month: int):
+def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
     cal_w = WIDTH // 7
 
     cal = calendar.Calendar(firstweekday=6)
     weeks = cal.monthdayscalendar(year, month)
     len_weeks = 5 if len(weeks) <= 5 else 6
-    date_h = 38 if len_weeks == 5 else 32
+    date_h = 40 if len_weeks == 5 else 34
     weekdays_h = 16
 
-    y = HEIGHT - (weekdays_h + date_h * len_weeks)
+    main_cal_h = weekdays_h + date_h * len_weeks
+
+    y = HEIGHT - main_cal_h
 
     # 曜日部分のグリッド
     weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
@@ -102,7 +104,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int):
             red=reverse,
             anchor="lt"
         )
-
+    
     # 日付部分のグリッド
     for r, row in enumerate(weeks):
         for c, day in enumerate(row):
@@ -131,6 +133,8 @@ def draw_main_calendar(draw: Draw, year: int, month: int):
                 red=reverse,
                 anchor="mt"
             )
+
+    return main_cal_h
 
 
 def make_calendar(year: int, month: int) -> None:
@@ -175,19 +179,21 @@ def make_calendar(year: int, month: int) -> None:
         anchor="lb"
     )
 
-    # サブカレンダー
-    draw_sub_calendar(
-        draw=draw,
-        year=next_year,
-        month=next_month
-    )
-
     # メインカレンダー
-    draw_main_calendar(
+    main_cal_h =draw_main_calendar(
         draw=draw,
         year=year,
         month=month,
     )
+
+    # サブカレンダー
+    draw_sub_calendar(
+        draw=draw,
+        year=next_year,
+        month=next_month,
+        main_cal_h=main_cal_h
+    )
+
 
     output_dir = os.path.join(os.path.dirname(__file__), "calendars")
     os.makedirs(output_dir, exist_ok=True)
