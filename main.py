@@ -26,7 +26,7 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int,
             w=cal_w,
             h=weekdays_h,
             text=text,
-            text_size=12,
+            text_size=10,
             red=reverse
         )
 
@@ -46,7 +46,7 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int,
                 w=cal_w,
                 h=date_h,
                 text="" if day == 0 else str(day),
-                text_size=12,
+                text_size=10,
                 red=reverse
             )
 
@@ -79,7 +79,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
         draw.draw_text(
             x=cx, y=cy, w=cw, h=ch,
             text=text,
-            text_size=16,
+            text_size=15,
             red=reverse
         )
 
@@ -107,7 +107,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
             draw.draw_text(
                 x=cx, y=cy, w=cw, h=ch,
                 text="" if day == 0 else str(day),
-                text_size=28,
+                text_size=20,
                 red=reverse
             )
 
@@ -128,7 +128,6 @@ def make_calendar(year: int, month: int) -> None:
     header_h = 90
     main_cal_h = height - header_h
 
-
     sub_cal_h = header_h - 10
     sub_cal_w = 16*7
 
@@ -142,7 +141,7 @@ def make_calendar(year: int, month: int) -> None:
         w=width * 2 // 7,
         h=header_h,
         text=text,
-        text_size=72
+        text_size=25
     )
 
     # サブカレンダー
