@@ -57,7 +57,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
     cal = calendar.Calendar(firstweekday=6)
     weeks = cal.monthdayscalendar(year, month)
     len_weeks = 5 if len(weeks) <= 5 else 6
-    date_h = h * 3 // (2 + len_weeks* 3)
+    date_h = h * 3 // (2 + len_weeks * 3)
     weekdays_h = h - date_h * len_weeks
 
     # 曜日部分のグリッド
@@ -115,7 +115,6 @@ def make_calendar(year: int, month: int) -> None:
     main_cal_h = height - header_h - margin_top_h - margin_middle_h
 
     sub_cal_w = 16*7
-    main_cal_w = 42*7
 
     draw = Draw(width, height)
 
@@ -146,9 +145,9 @@ def make_calendar(year: int, month: int) -> None:
         draw=draw,
         year=year,
         month=month,
-        x=(width - main_cal_w) // 2,
+        x=0,
         y=margin_top_h + header_h + margin_middle_h,
-        w=main_cal_w,
+        w=width,
         h=main_cal_h
     )
 
