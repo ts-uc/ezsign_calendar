@@ -11,7 +11,7 @@ HEADER_H = 90
 
 
 def draw_sub_calendar(draw: Draw, year: int, month: int):
-    cal_w = 20
+    cal_w = 18
     x = WIDTH - cal_w * 7 - 5
 
     cal = calendar.Calendar(firstweekday=6)
@@ -22,6 +22,17 @@ def draw_sub_calendar(draw: Draw, year: int, month: int):
 
     h = weekdays_h + date_h * len_weeks
     y = (HEADER_H - h) // 2 + 2
+
+    # 月表示
+    text = str(month)
+    draw.draw_text(
+        x=x - 3,
+        y=y,
+        text=text,
+        text_size=15,
+        anchor="rt"
+    )
+
 
     # 曜日部分のグリッド
     weekdays = ["S", "M", "T", "W", "T", "F", "S"]
@@ -140,14 +151,28 @@ def make_calendar(year: int, month: int) -> None:
     draw = Draw(WIDTH, HEIGHT)
 
     # 年月表示
-    text = str(month)
-    draw.draw_text_center(
-        x=0,
-        y=0,
-        w=WIDTH * 2 // 7,
-        h=header_h,
-        text=text,
-        text_size=25
+    draw.draw_text(
+        x=80,
+        y=75,
+        text=str(year),
+        text_size=20,
+        anchor="rb"
+    )
+
+    draw.draw_text(
+        x=120,
+        y=75,
+        text=str(month),
+        text_size=50,
+        anchor="mb"
+    )
+
+    draw.draw_text(
+        x=160,
+        y=75,
+        text=calendar.month_abbr[month].upper(),
+        text_size=20,
+        anchor="lb"
     )
 
     # サブカレンダー
