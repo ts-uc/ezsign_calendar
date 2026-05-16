@@ -7,7 +7,7 @@ class Draw:
         self.img = Image.new("RGB", (w, h), (255, 255, 255))
         self.draw = ImageDraw.Draw(self.img)
 
-    def draw_cell(self, x: int, y: int, w: int, h: int, text: str, text_size: int, red: bool = False):
+    def draw_text(self, x: int, y: int, w: int, h: int, text: str, text_size: int, red: bool = False):
         font = read_font.read_font(text_size)
 
         # セルの中央座標

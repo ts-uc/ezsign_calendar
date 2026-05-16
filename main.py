@@ -20,7 +20,7 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int,
 
     for c, text in enumerate(weekdays):
         reverse = (c == 0)
-        draw.draw_cell(
+        draw.draw_text(
             x=x + c * cal_w,
             y=y,
             w=cal_w,
@@ -40,7 +40,7 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int,
                 is_holiday = jpholiday.is_holiday(d)
             reverse = (c == 0) or is_holiday
 
-            draw.draw_cell(
+            draw.draw_text(
                 x=x + c * cal_w,
                 y=y + weekdays_h + r * date_h,
                 w=cal_w,
@@ -65,7 +65,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
 
     for c, text in enumerate(weekdays):
         reverse = (c == 0)
-        draw.draw_cell(
+        draw.draw_text(
             x=x + c * cal_w,
             y=y,
             w=cal_w,
@@ -85,7 +85,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
                 is_holiday = jpholiday.is_holiday(d)
             reverse = (c == 0) or is_holiday
 
-            draw.draw_cell(
+            draw.draw_text(
                 x=x + c * cal_w,
                 y=y + weekdays_h + r * date_h,
                 w=cal_w,
@@ -121,7 +121,7 @@ def make_calendar(year: int, month: int) -> None:
 
     # 年月表示
     text = str(month)
-    draw.draw_cell(
+    draw.draw_text(
         x=0,
         y=0,
         w=width,
