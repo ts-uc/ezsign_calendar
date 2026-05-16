@@ -102,6 +102,31 @@ class Draw:
         for x1, y1, x2, y2 in lines:
             self._draw_dashed_line(x1, y1, x2, y2)
 
+
+    def draw_moon_phase(self, x: int, y: int, w: int, h: int, phase: int):
+        # 朔・上弦・望・下弦の4相だけを描画
+        radius = min(w, h) // 2 - 2
+        cx = x + w // 2
+        cy = y + h // 2
+        bbox = (cx - radius, cy - radius, cx + radius, cy + radius)
+
+        if phase == 0:
+            # 朔 (新月)
+            self.draw.ellipse(bbox, fill=(0, 0, 0))
+        elif phase == 1:
+            # 上弦 (右半分が明るい)
+            self.draw.ellipse(bbox, fill=(0, 0, 0))
+            self.draw.pieslice(bbox, -90, 90, fill=(255, 255, 0))
+        elif phase == 2:
+            # 望 (満月)
+            self.draw.ellipse(bbox, fill=(255, 255, 0))
+        else:
+            # 下弦 (左半分が明るい)
+            self.draw.ellipse(bbox, fill=(0, 0, 0))
+            self.draw.pieslice(bbox, 90, 270, fill=(255, 255, 0))
+        self.draw.ellipse(bbox, outline=(0, 0, 0))
+
+
     def save(self, out: str):
         self.img.save(out)
 

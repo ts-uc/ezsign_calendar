@@ -4,6 +4,8 @@ import jpholiday
 import argparse
 import os
 import sxtwl
+from skyfield.api import load
+from skyfield import almanac
 from draw import Draw
 from qreki import Kyureki
 
@@ -17,6 +19,31 @@ JQ = [
     "処暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪"
 ]
 
+# 初期化（1回だけ）
+ts = load.timescale()
+eph = load("de421.bsp")
+
+def moon_phase_type(date: datetime):
+    """
+    指定日の主要月相を返す
+
+    Returns:
+        0: 朔
+        1: 上弦
+        2: 望
+        3: 下弦
+        None: その日に主要月相なし
+    """
+
+    t0 = ts.utc(date.year, date.month, date.day)
+    t1 = ts.utc((date + datetime.timedelta(days=1)).year,
+                (date + datetime.timedelta(days=1)).month,
+                (date + datetime.timedelta(days=1)).day)
+
+    f = almanac.moon_phases(eph)
+    _, phases = almanac.find_discrete(t0, t1, f)
+
+    return int(phases[0]) if len(phases) else None
 
 def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     cal_w = 18
@@ -144,6 +171,15 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
             )
 
             if day != 0:
+                # 月相
+                mp = moon_phase_type(datetime.datetime(year, month, day))
+                if mp is not None:
+                    draw.draw_moon_phase(
+                        x=cx + cw - 2 - 12, y=cy + ch - 2 - 12,
+                        w=12, h=12,
+                        phase=mp
+                    )
+
                 # 六曜
                 k = Kyureki.from_ymd(year, month, day)
                 draw.draw_text(
