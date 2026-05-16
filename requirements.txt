@@ -1,2 +1,3 @@
 Pillow>=10.0.0
 jpholiday>=1.0.0
+qreki @ git+https://github.com/fgshun/qreki_py.git@v0.6.1

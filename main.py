@@ -4,6 +4,7 @@ import jpholiday
 import argparse
 import os
 from draw import Draw
+from qreki import Kyureki
 
 WIDTH = 400
 HEIGHT = 300
@@ -32,7 +33,6 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> Non
         text_size=15,
         anchor="rt"
     )
-
 
     # 曜日部分のグリッド
     weekdays = ["S", "M", "T", "W", "T", "F", "S"]
@@ -104,7 +104,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
             red=reverse,
             anchor="lt"
         )
-    
+
     # 日付部分のグリッド
     for r, row in enumerate(weeks):
         for c, day in enumerate(row):
@@ -113,6 +113,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
             cw = cal_w
             ch = date_h
 
+            # 罫線
             draw.draw_cell_line(
                 x=cx, y=cy, w=cw, h=ch,
                 top=True,
@@ -126,6 +127,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
                 is_holiday = jpholiday.is_holiday(d)
             reverse = (c == 0) or is_holiday
 
+            # 日付
             draw.draw_text(
                 x=cx + 3 + 15, y=cy+4,
                 text="" if day == 0 else str(day),
@@ -133,6 +135,16 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
                 red=reverse,
                 anchor="mt"
             )
+
+            if day != 0:
+                # 六曜
+                k = Kyureki.from_ymd(year, month, day)
+                draw.draw_text(
+                    x=cx + cw - 3, y=cy+4,
+                    text=k.rokuyou,
+                    text_size=8,
+                    anchor="rt"
+                )
 
     return main_cal_h
 
@@ -180,7 +192,7 @@ def make_calendar(year: int, month: int) -> None:
     )
 
     # メインカレンダー
-    main_cal_h =draw_main_calendar(
+    main_cal_h = draw_main_calendar(
         draw=draw,
         year=year,
         month=month,
@@ -193,7 +205,6 @@ def make_calendar(year: int, month: int) -> None:
         month=next_month,
         main_cal_h=main_cal_h
     )
-
 
     output_dir = os.path.join(os.path.dirname(__file__), "calendars")
     os.makedirs(output_dir, exist_ok=True)
