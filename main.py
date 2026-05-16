@@ -64,12 +64,20 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
     weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
     for c, text in enumerate(weekdays):
+        cx = x + c * cal_w
+        cy = y
+        cw = cal_w
+        ch = weekdays_h
+
+        draw.draw_cell_line(
+            x=cx, y=cy, w=cw, h=ch,
+            top=True,
+            right=(c != 6)
+        )
+
         reverse = (c == 0)
         draw.draw_text(
-            x=x + c * cal_w,
-            y=y,
-            w=cal_w,
-            h=weekdays_h,
+            x=cx, y=cy, w=cw, h=ch,
             text=text,
             text_size=16,
             red=reverse
@@ -78,6 +86,17 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
     # 日付部分のグリッド
     for r, row in enumerate(weeks):
         for c, day in enumerate(row):
+            cx = x + c * cal_w
+            cy = y + weekdays_h + r * date_h
+            cw = cal_w
+            ch = date_h
+
+            draw.draw_cell_line(
+                x=cx, y=cy, w=cw, h=ch,
+                top=True,
+                right=(c != 6)
+            )
+
             # 祝日判定
             is_holiday = False
             if day != 0:
@@ -86,10 +105,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
             reverse = (c == 0) or is_holiday
 
             draw.draw_text(
-                x=x + c * cal_w,
-                y=y + weekdays_h + r * date_h,
-                w=cal_w,
-                h=date_h,
+                x=cx, y=cy, w=cw, h=ch,
                 text="" if day == 0 else str(day),
                 text_size=28,
                 red=reverse
