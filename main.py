@@ -76,11 +76,12 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
         )
 
         reverse = (c == 0)
-        draw.draw_text_center(
-            x=cx, y=cy, w=cw, h=ch,
+        draw.draw_text(
+            x=cx+3, y=cy+4,
             text=text,
-            text_size=15,
-            red=reverse
+            text_size=10,
+            red=reverse,
+            anchor="lt"
         )
 
     # 日付部分のグリッド
@@ -104,11 +105,12 @@ def draw_main_calendar(draw: Draw, year: int, month: int, x: int, y: int, w: int
                 is_holiday = jpholiday.is_holiday(d)
             reverse = (c == 0) or is_holiday
 
-            draw.draw_text_center(
-                x=cx, y=cy, w=cw, h=ch,
+            draw.draw_text(
+                x=cx + 3 + 15, y=cy+4,
                 text="" if day == 0 else str(day),
                 text_size=20,
-                red=reverse
+                red=reverse,
+                anchor="mt"
             )
 
 
@@ -129,7 +131,7 @@ def make_calendar(year: int, month: int) -> None:
     main_cal_h = height - header_h
 
     sub_cal_h = header_h - 10
-    sub_cal_w = 16*7
+    sub_cal_w = 18*7
 
     draw = Draw(width, height)
 
