@@ -7,46 +7,50 @@ from draw import Draw
 
 
 def make_calendar(year: int, month: int) -> None:
-    cell_w = 20
-    width = cell_w * 7
-    height = 96
-
-    header_h = 12
-    weekdays_h = 12
-    date_h = 12
+    width = 400
+    height = 300
 
     cal = calendar.Calendar(firstweekday=6)
     weeks = cal.monthdayscalendar(year, month)
+    len_weeks = 5 if len(weeks) <= 5 else 6
 
-    if len(weeks) <= 5:
-        weekdays_h = 14
-        date_h = 14
+    header_h = 90
+    weekdays_h = 210 * 2 // (2 + len_weeks*3)
+    date_h = 210 * 3 // (2 + len_weeks*3)
+
+    main_cal_w = 46
+    main_cal_origin_x = (width - main_cal_w * 7) // 2
+    main_cal_origin_y = header_h
+
+    # if len(weeks) <= 5:
+    #     weekdays_h = 14
+    #     date_h = 14
 
     draw = Draw(width, height)
 
     # 年月表示
-    text = f"{year:04}-{month:02}"
+    text = str(month)
     draw.draw_cell(
         x=0,
         y=0,
         w=width,
         h=header_h,
         text=text,
-        text_size=12
+        text_size=72
     )
 
     # 曜日部分のグリッド
-    weekdays = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"]
+    weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
     for c, text in enumerate(weekdays):
         reverse = (c == 0)
         draw.draw_cell(
-            x=c * cell_w,
-            y=header_h,
-            w=cell_w,
+            x=main_cal_origin_x + c * main_cal_w,
+            y=main_cal_origin_y,
+            w=main_cal_w,
             h=weekdays_h,
             text=text,
-            text_size=12,
+            text_size=16,
             red=reverse
         )
 
@@ -61,12 +65,12 @@ def make_calendar(year: int, month: int) -> None:
             reverse = (c == 0) or is_holiday
 
             draw.draw_cell(
-                x=c * cell_w,
-                y=r * date_h + header_h + weekdays_h,
-                w=cell_w,
+                x=main_cal_origin_x + c * main_cal_w,
+                y=main_cal_origin_y + weekdays_h + r * date_h,
+                w=main_cal_w,
                 h=date_h,
                 text="" if day == 0 else str(day),
-                text_size=12,
+                text_size=24,
                 red=reverse
             )
 
