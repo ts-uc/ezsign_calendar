@@ -17,6 +17,7 @@ JQ = [
     "処暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪"
 ]
 
+
 def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     cal_w = 18
     x = WIDTH - cal_w * 7 - 5
@@ -161,6 +162,19 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
                         text=JQ[sd.getJieQi()],
                         text_size=8,
                         anchor="rt"
+                    )
+
+                # 祝日名
+                d = datetime.date(year, month, day)
+                if jpholiday.is_holiday(d):
+                    holiday_name = jpholiday.is_holiday_name(d)
+                    holiday_name = "振替休日" if "振替休日" in holiday_name else holiday_name
+                    draw.draw_text(
+                        x=cx + 3, y=cy+4 + 21,
+                        text=holiday_name,
+                        text_size=8,
+                        anchor="lt",
+                        red=True
                     )
 
     return main_cal_h
