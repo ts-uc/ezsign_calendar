@@ -15,6 +15,17 @@ WIDTH = 400
 HEIGHT = 300
 HEADER_H = 90
 
+# レイアウト定数
+CAL_W = WIDTH // 7
+DATE_H_5W = 40
+DATE_H_6W = 34
+WEEKDAYS_H = 16
+
+# サブカレンダー定数
+SUB_CAL_W = 18
+SUB_DATE_H_5W = 12
+SUB_DATE_H_6W = 11
+
 JQ = [
     "冬至", "小寒", "大寒", "立春", "雨水", "啓蟄", "春分", "清明",
     "穀雨", "立夏", "小満", "芒種", "夏至", "小暑", "大暑", "立秋",
@@ -89,61 +100,76 @@ def moon_phase_type(date: datetime):
 
     return int(phases[0]) if len(phases) else None
 
+
+def draw_weekday_cell(draw: Draw, cx: int, cy: int, cw: int, ch: int, text: str, right: bool, is_sunday: bool):
+    draw.draw_cell_line(x=cx, y=cy, w=cw, h=ch, top=True, right=right)
+    draw.draw_text(x=cx + 3, y=cy + 4, text=text, text_size=10, red=is_sunday, anchor="lt")
+
+
+def draw_date_cell(draw: Draw, cx: int, cy: int, cw: int, ch: int, day: int, year: int, month: int, right: bool):
+    # 罫線
+    draw.draw_cell_line(x=cx, y=cy, w=cw, h=ch, top=True, right=right)
+
+    # 日付表示
+    draw.draw_text(x=cx + 3 + 15, y=cy + 4, text="" if day == 0 else str(day), text_size=20, red=False, anchor="mt")
+
+    if day == 0:
+        return
+
+    # 祝日判定
+    d = datetime.date(year, month, day)
+    is_holiday = jpholiday.is_holiday(d)
+    reverse = is_holiday
+
+    if reverse:
+        # 再描画赤文字で上書き
+        draw.draw_text(x=cx + 3 + 15, y=cy + 4, text=str(day), text_size=20, red=True, anchor="mt")
+
+    # 月相
+    mp = moon_phase_type(datetime.datetime(year, month, day))
+    if mp is not None:
+        draw.draw_moon_phase(x=cx + cw - 2 - 12, y=cy + ch - 2 - 12, w=12, h=12, phase=mp)
+
+    # 六曜
+    k = Kyureki.from_ymd(year, month, day)
+    draw.draw_text(x=cx + cw - 3, y=cy + 4, text=k.rokuyou, text_size=8, anchor="rt")
+
+    # 二十四節気
+    sd = sxtwl.fromSolar(year, month, day)
+    if sd.hasJieQi():
+        draw.draw_text(x=cx + cw - 3, y=cy + 4 + 10, text=JQ[sd.getJieQi()], text_size=8, anchor="rt")
+
+    # 祝日名
+    if is_holiday:
+        holiday_name = jpholiday.is_holiday_name(d)
+        holiday_name = "振替休日" if "振替休日" in holiday_name else holiday_name
+        draw.draw_text(x=cx + 3, y=cy + 4 + 21, text=holiday_name, text_size=8, anchor="lt", red=True)
+
 def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
-    cal_w = 18
+    cal_w = SUB_CAL_W
     x = WIDTH - cal_w * 7 - 5
 
     cal = calendar.Calendar(firstweekday=6)
     weeks = cal.monthdayscalendar(year, month)
     len_weeks = 5 if len(weeks) <= 5 else 6
-    date_h = 12 if len_weeks == 5 else 11
+    date_h = SUB_DATE_H_5W if len_weeks == 5 else SUB_DATE_H_6W
     weekdays_h = date_h
 
     h = weekdays_h + date_h * len_weeks
     y = (HEIGHT - main_cal_h - h + 1) // 2
 
     # 月表示
-    text = str(month)
-    draw.draw_text(
-        x=x - 3,
-        y=y,
-        text=text,
-        text_size=15,
-        anchor="rt"
-    )
+    draw.draw_text(x=x - 3, y=y, text=str(month), text_size=15, anchor="rt")
 
     # 曜日部分のグリッド
     weekdays = ["S", "M", "T", "W", "T", "F", "S"]
-
     for c, text in enumerate(weekdays):
-        reverse = (c == 0)
-        draw.draw_text(
-            x=x + c * cal_w + cal_w // 2,
-            y=y,
-            text=text,
-            text_size=10,
-            red=reverse,
-            anchor="mt"
-        )
+        draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y, text=text, text_size=10, red=(c == 0), anchor="mt")
 
     # 日付部分のグリッド
     for r, row in enumerate(weeks):
         for c, day in enumerate(row):
-            # 祝日判定
-            is_holiday = False
-            if day != 0:
-                d = datetime.date(year, month, day)
-                is_holiday = jpholiday.is_holiday(d)
-            reverse = (c == 0) or is_holiday
-
-            draw.draw_text(
-                x=x + c * cal_w + cal_w // 2,
-                y=y + weekdays_h + r * date_h,
-                text="" if day == 0 else str(day),
-                text_size=10,
-                red=reverse,
-                anchor="mt"
-            )
+            draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y + weekdays_h + r * date_h, text="" if day == 0 else str(day), text_size=10, red=(c == 0), anchor="mt")
 
 
 def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
@@ -167,21 +193,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
         cy = y
         cw = cal_w
         ch = weekdays_h
-
-        draw.draw_cell_line(
-            x=cx, y=cy, w=cw, h=ch,
-            top=True,
-            right=(c != 6)
-        )
-
-        reverse = (c == 0)
-        draw.draw_text(
-            x=cx+3, y=cy+4,
-            text=text,
-            text_size=10,
-            red=reverse,
-            anchor="lt"
-        )
+        draw_weekday_cell(draw, cx, cy, cw, ch, text, right=(c != 6), is_sunday=(c == 0))
 
     # 日付部分のグリッド
     for r, row in enumerate(weeks):
@@ -191,71 +203,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
             cw = cal_w
             ch = date_h
 
-            # 罫線
-            draw.draw_cell_line(
-                x=cx, y=cy, w=cw, h=ch,
-                top=True,
-                right=(c != 6)
-            )
-
-            # 祝日判定
-            is_holiday = False
-            if day != 0:
-                d = datetime.date(year, month, day)
-                is_holiday = jpholiday.is_holiday(d)
-            reverse = (c == 0) or is_holiday
-
-            # 日付
-            draw.draw_text(
-                x=cx + 3 + 15, y=cy+4,
-                text="" if day == 0 else str(day),
-                text_size=20,
-                red=reverse,
-                anchor="mt"
-            )
-
-            if day != 0:
-                # 月相
-                mp = moon_phase_type(datetime.datetime(year, month, day))
-                if mp is not None:
-                    draw.draw_moon_phase(
-                        x=cx + cw - 2 - 12, y=cy + ch - 2 - 12,
-                        w=12, h=12,
-                        phase=mp
-                    )
-
-                # 六曜
-                k = Kyureki.from_ymd(year, month, day)
-                draw.draw_text(
-                    x=cx + cw - 3, y=cy+4,
-                    text=k.rokuyou,
-                    text_size=8,
-                    anchor="rt"
-                )
-
-                # 二十四節気
-                sd = sxtwl.fromSolar(year, month, day)
-
-                if sd.hasJieQi():
-                    draw.draw_text(
-                        x=cx + cw - 3, y=cy+4 + 10,
-                        text=JQ[sd.getJieQi()],
-                        text_size=8,
-                        anchor="rt"
-                    )
-
-                # 祝日名
-                d = datetime.date(year, month, day)
-                if jpholiday.is_holiday(d):
-                    holiday_name = jpholiday.is_holiday_name(d)
-                    holiday_name = "振替休日" if "振替休日" in holiday_name else holiday_name
-                    draw.draw_text(
-                        x=cx + 3, y=cy+4 + 21,
-                        text=holiday_name,
-                        text_size=8,
-                        anchor="lt",
-                        red=True
-                    )
+            draw_date_cell(draw, cx, cy, cw, ch, day, year, month, right=(c != 6))
 
     return main_cal_h
 
