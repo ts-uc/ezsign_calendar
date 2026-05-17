@@ -108,7 +108,7 @@ class Draw:
 
         for yy in range(top, bottom):
             for xx in range(left, right):
-                if mask_pixels[xx, yy]:
+                if mask_pixels[xx, yy] > 128:
                     if xx % 2 == 0 and yy % 2 == 0:
                         img_pixels[xx, yy] = color
 
