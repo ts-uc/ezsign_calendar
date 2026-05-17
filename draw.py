@@ -11,6 +11,7 @@ class Draw:
         font_path_j10 = os.path.join(os.path.dirname(
             __file__), "fonts", "Jersey10-Regular.ttf")
         self.font_j10 = read_font(font_path_j10, 19)
+        self.font_j10_double = read_font(font_path_j10, 38)
         font_path_j15 = os.path.join(os.path.dirname(
             __file__), "fonts", "Jersey15-Regular.ttf")
         self.font_j15 = read_font(font_path_j15, 27)
@@ -20,26 +21,28 @@ class Draw:
         font_path_j25 = os.path.join(os.path.dirname(
             __file__), "fonts", "Jersey25-Regular.ttf")
         self.font_j25 = read_font(font_path_j25, 41)
-        self.font_j50 = read_font(font_path_j25, 82)
+        self.font_j25_double = read_font(font_path_j25, 82)
 
         # フォントキー列挙とマップ
         class FontKey(Enum):
             MISAKI = "misaki"
             J10 = "j10"
+            J10D = "j10d"
             J15 = "j15"
             J20 = "j20"
             J25 = "j25"
-            J50 = "j50"
+            J25D = "j25d"
 
         self.FontKey = FontKey
 
         self.font_map = {
             FontKey.MISAKI: self.font_misaki,
             FontKey.J10: self.font_j10,
+            FontKey.J10D: self.font_j10_double,
             FontKey.J15: self.font_j15,
             FontKey.J20: self.font_j20,
             FontKey.J25: self.font_j25,
-            FontKey.J50: self.font_j50,
+            FontKey.J25D: self.font_j25_double,
         }
 
         self.img = Image.new("RGB", (w, h), (255, 255, 255))

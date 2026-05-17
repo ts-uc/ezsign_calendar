@@ -51,7 +51,7 @@ def draw_header(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     draw.draw_text(x=80, y= header_h // 2, text=str(year), font_key=draw.FontKey.J20, anchor="rm")
     draw.draw_text(x=80, y= header_h // 2 + 16, text=f"{jp_era}年{eto}", font_key=draw.FontKey.MISAKI, anchor="rm")
 
-    draw.draw_text(x=120, y= header_h // 2, text=str(month), font_key=draw.FontKey.J50, anchor="mm")
+    draw.draw_text(x=120, y= header_h // 2, text=str(month), font_key=draw.FontKey.J25D, anchor="mm")
 
     draw.draw_text(x=160, y= header_h // 2, text=calendar.month_abbr[month].upper(), font_key=draw.FontKey.J20, anchor="lm")
     draw.draw_text(x=160, y= header_h // 2 + 16, text=month_name, font_key=draw.FontKey.MISAKI, anchor="lm")
@@ -84,7 +84,7 @@ def draw_date_cell(
     red = is_sunday or holiday
 
     # 日付表示
-    draw.draw_text(x=cx + 35 - 14, y=cy + 4, text=str(day), font_key=draw.FontKey.J20, red=red, hatched=is_other_month,anchor="mt")
+    draw.draw_text(x=cx + 35 - 14, y=cy + 4, text=str(day), font_key=draw.FontKey.J10D if is_other_month else draw.FontKey.J20, red=red, hatched=is_other_month,anchor="mt")
 
     if is_other_month:
         return
