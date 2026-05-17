@@ -5,14 +5,14 @@ import os
 
 from draw import Draw
 from calendar_meta import (
-    get_era_text,
-    get_kanshi,
-    get_traditional_month_name,
+    get_jp_era,
+    get_eto,
+    get_traditional_month,
     get_moon_phase_type,
     is_holiday,
-    get_holiday_name,
+    get_holiday,
     get_rokuyou,
-    get_jieqi_text,
+    get_sekki,
     next_month_year,
 )
 
@@ -46,11 +46,11 @@ def draw_header(draw: Draw, year: int, month: int) -> None:
     draw.draw_text(x=80, y=65, text=str(year), text_size=20, anchor="rb")
 
     d = datetime.date(year, month, 1)
-    era_name, year_text = get_era_text(d)
-    kanshi = get_kanshi(d)
-    month_name = get_traditional_month_name(month)
+    jp_era = get_jp_era(d)
+    ETO = get_eto(d)
+    month_name = get_traditional_month(month)
 
-    draw.draw_text(x=80, y=75, text=f"{era_name}{year_text}年{kanshi}", text_size=8, anchor="rb")
+    draw.draw_text(x=80, y=75, text=f"{jp_era}年{ETO}", text_size=8, anchor="rb")
     draw.draw_text(x=120, y=75, text=str(month), text_size=50, anchor="mb")
     draw.draw_text(x=160, y=65, text=calendar.month_abbr[month].upper(), text_size=20, anchor="lb")
     draw.draw_text(x=160, y=75, text=month_name, text_size=8, anchor="lb")
@@ -94,12 +94,12 @@ def draw_date_cell(
     draw.draw_text(x=cx + cw - 3, y=cy + 4, text=get_rokuyou(d), text_size=8, anchor="rt")
 
     # 二十四節気
-    jieqi = get_jieqi_text(d)
+    jieqi = get_sekki(d)
     if jieqi:
         draw.draw_text(x=cx + cw - 3, y=cy + 4 + 10, text=jieqi, text_size=8, anchor="rt")
 
     # 祝日名
-    holiday_name = get_holiday_name(d)
+    holiday_name = get_holiday(d)
     if holiday_name:
         draw.draw_text(x=cx + 3, y=cy + 4 + 21, text=holiday_name, text_size=8, anchor="lt", red=True)
 

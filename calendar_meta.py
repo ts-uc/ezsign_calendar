@@ -9,14 +9,14 @@ from skyfield import almanac
 from skyfield.api import load
 
 # 二十四節気名称
-JQ = [
+SEKKI = [
     "冬至", "小寒", "大寒", "立春", "雨水", "啓蟄", "春分", "清明",
     "穀雨", "立夏", "小満", "芒種", "夏至", "小暑", "大暑", "立秋",
     "処暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪"
 ]
 
 # 干支
-KANSHI = [
+ETO = [
     "甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉",
     "甲戌", "乙亥", "丙子", "丁丑", "戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未",
     "甲申", "乙酉", "丙戌", "丁亥", "戊子", "己丑", "庚寅", "辛卯", "壬辰", "癸巳",
@@ -26,7 +26,8 @@ KANSHI = [
 ]
 
 # 伝統的月名
-JM = ["", "睦月", "如月", "弥生", "卯月", "皐月", "水無月", "文月", "葉月", "長月", "神無月", "霜月", "師走"]
+TRADITIONAL_MONTH = ["", "睦月", "如月", "弥生", "卯月", "皐月", "水無月",
+      "文月", "葉月", "長月", "神無月", "霜月", "師走"]
 
 # Skyfield 初期化（1回だけ）
 ts = load.timescale()
@@ -49,19 +50,19 @@ def next_month_year(year: int, month: int) -> tuple[int, int]:
     return ny, nm
 
 
-def get_era_text(date: datetime.date) -> tuple[str, str]:
+def get_jp_era(date: datetime.date) -> str:
     era_name = EraDate.from_date(date).strftime("%-K")
     year_text = EraDate.from_date(date).strftime("%-Y")
     year_text = "元" if year_text == "1" else to_zenkaku(year_text)
-    return era_name, year_text
+    return era_name+year_text
 
 
-def get_kanshi(date: datetime.date) -> str:
-    return KANSHI[(date.year - 4) % 60]
+def get_eto(date: datetime.date) -> str:
+    return ETO[(date.year - 4) % 60]
 
 
-def get_traditional_month_name(month: int) -> str:
-    return JM[month]
+def get_traditional_month(month: int) -> str:
+    return TRADITIONAL_MONTH[month]
 
 
 def get_moon_phase_type(date: datetime.date) -> int | None:
@@ -78,7 +79,7 @@ def is_holiday(date: datetime.date) -> bool:
     return jpholiday.is_holiday(date)
 
 
-def get_holiday_name(date: datetime.date) -> str | None:
+def get_holiday(date: datetime.date) -> str | None:
     if not is_holiday(date):
         return None
     name = jpholiday.is_holiday_name(date)
@@ -90,6 +91,6 @@ def get_rokuyou(date: datetime.date) -> str:
     return k.rokuyou
 
 
-def get_jieqi_text(date: datetime.date) -> str | None:
+def get_sekki(date: datetime.date) -> str | None:
     sd = sxtwl.fromSolar(date.year, date.month, date.day)
-    return JQ[sd.getJieQi()] if sd.hasJieQi() else None
+    return SEKKI[sd.getJieQi()] if sd.hasJieQi() else None
