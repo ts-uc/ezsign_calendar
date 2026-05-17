@@ -98,6 +98,12 @@ def get_commemorative_holiday(date: datetime.date) -> str | None:
         return "クリスマス"
     if date.month == 12 and date.day == 31:
         return "大晦日"
+    
+    k = Kyureki.from_ymd(date.year, date.month, date.day)
+    if k.leap_month == 0 and k.month == 1 and k.day == 1:
+        return "旧正月"
+    elif k.leap_month == 0 and k.month == 8 and k.day == 15:
+        return "十五夜"
     return None
 
 
