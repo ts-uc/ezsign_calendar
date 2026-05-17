@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
+from enum import Enum
 
 
 class Draw:
@@ -21,15 +22,35 @@ class Draw:
         self.font_j25 = read_font(font_path_j25, 41)
         self.font_j50 = read_font(font_path_j25, 82)
 
+        # フォントキー列挙とマップ
+        class FontKey(Enum):
+            MISAKI = "misaki"
+            J10 = "j10"
+            J15 = "j15"
+            J20 = "j20"
+            J25 = "j25"
+            J50 = "j50"
+
+        self.FontKey = FontKey
+
+        self.font_map = {
+            FontKey.MISAKI: self.font_misaki,
+            FontKey.J10: self.font_j10,
+            FontKey.J15: self.font_j15,
+            FontKey.J20: self.font_j20,
+            FontKey.J25: self.font_j25,
+            FontKey.J50: self.font_j50,
+        }
+
         self.img = Image.new("RGB", (w, h), (255, 255, 255))
         self.draw = ImageDraw.Draw(self.img)
 
-    def draw_text_center(self, x: int, y: int, w: int, h: int, text: str, text_size: int, red: bool = False):
+    def draw_text_center(self, x: int, y: int, w: int, h: int, text: str, font_key: object | None = None, red: bool = False):
         cx = x + w // 2
         cy = y + h // 2
         self.draw_text(
-            x=cx, y=cy, 
-            text=text, text_size=text_size, red=red
+            x=cx, y=cy,
+            text=text, font_key=font_key, red=red
         )
 
 
@@ -38,25 +59,33 @@ class Draw:
         x: int,
         y: int,
         text: str,
-        text_size: int,
+        font_key: object | None = None,
         red: bool = False,
         anchor: str = "mm",
-        hatched: bool = False
+        hatched: bool = False,
+        hatch_parity: int = 0,
     ):
         # フォント選択
         font = None
-        if text_size == 8:
-            font = self.font_misaki
-        elif text_size <= 12:
+
+        # font_key が指定されていれば優先して選択
+        if font_key is not None:
+            if isinstance(font_key, str):
+                k = font_key.lower()
+                for fk in self.font_map:
+                    if fk.value == k or fk.name.lower() == k:
+                        font = self.font_map[fk]
+                        break
+            else:
+                # Enum か既にキーオブジェクト
+                try:
+                    font = self.font_map[font_key]
+                except Exception:
+                    font = None
+
+        # 指定がなければ既定フォントを使用 (J10)
+        if font is None:
             font = self.font_j10
-        elif text_size <= 17:
-            font = self.font_j15
-        elif text_size <= 22:
-            font = self.font_j20
-        elif text_size <= 27:
-            font = self.font_j25
-        else:
-            font = self.font_j50
 
         color = (255, 0, 0) if red else (0, 0, 0)
 
