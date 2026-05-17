@@ -77,18 +77,17 @@ def draw_date_cell(
 
     # 隣接月の日付は薄く表示するため、チェック
     is_other_month = date_obj.month != target_month
-    if is_other_month:
-        return
 
     day = date_obj.day
-    year = date_obj.year
-    month = date_obj.month
 
     holiday = is_holiday(date_obj)
     red = is_sunday or holiday
 
     # 日付表示
-    draw.draw_text(x=cx + 35 - 14, y=cy + 4, text=str(day), text_size=20, red=red, anchor="mt")
+    draw.draw_text(x=cx + 35 - 14, y=cy + 4, text=str(day), text_size=20, red=red, hatched=is_other_month,anchor="mt")
+
+    if is_other_month:
+        return
 
     # 月相
     mp = get_moon_phase_type(date_obj)
