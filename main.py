@@ -148,7 +148,15 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
 
     cal = calendar.Calendar(firstweekday=6)
     weeks = cal.monthdatescalendar(year, month)
-    len_weeks = 5 if len(weeks) <= 5 else 6
+    
+    # 4週の場合、次の月の最初の週を追加して5週にする
+    if len(weeks) == 4:
+        next_year, next_month = next_month_year(year, month)
+        next_weeks = cal.monthdatescalendar(next_year, next_month)
+        if next_weeks:
+            weeks.append(next_weeks[0])
+    
+    len_weeks = len(weeks)
     date_h = 40 if len_weeks == 5 else 34
     weekdays_h = 16
 
