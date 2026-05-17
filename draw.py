@@ -33,9 +33,17 @@ class Draw:
         )
 
 
-    def draw_text(self, x: int, y: int, text: str, text_size: int, red: bool = False, anchor: str = "mm"):
-        # セルの中央座標
-
+    def draw_text(
+        self,
+        x: int,
+        y: int,
+        text: str,
+        text_size: int,
+        red: bool = False,
+        anchor: str = "mm",
+        hatched: bool = False
+    ):
+        # フォント選択
         font = None
         if text_size == 8:
             font = self.font_misaki
@@ -50,14 +58,27 @@ class Draw:
         else:
             font = self.font_j50
 
-        # anchor="mm" で見えているサイズの中央に配置
-        self.draw.text(
-            (x, y),
-            text,
-            font=font,
-            fill=(255, 0, 0) if red else (0, 0, 0),
-            anchor=anchor
-        )
+        color = (255, 0, 0) if red else (0, 0, 0)
+
+        if not hatched:
+            # 通常描画
+            self.draw.text((x, y), text, font=font, fill=color, anchor=anchor)
+            return
+
+        # 網掛け描画: まずテキストをマスクに描画し、その領域で1pxごとの点を描く
+        mask = Image.new("L", self.img.size, 0)
+        mask_draw = ImageDraw.Draw(mask)
+        mask_draw.text((x, y), text, font=font, fill=255, anchor=anchor)
+
+        left, top, right, bottom = mask.getbbox() or (0, 0, 0, 0)
+        img_pixels = self.img.load()
+        mask_pixels = mask.load()
+
+        for yy in range(top, bottom):
+            for xx in range(left, right):
+                if mask_pixels[xx, yy]:
+                    if xx % 2 == 0 and yy % 2 == 0:
+                        img_pixels[xx, yy] = color
 
     def _draw_dashed_line(
         self,
