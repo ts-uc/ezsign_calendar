@@ -135,7 +135,12 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> Non
             if date_obj.month != month:
                 continue
             day_text = str(date_obj.day)
-            draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y + weekdays_h + r * date_h, text=day_text, text_size=10, red=(c == 0), anchor="mt")
+
+            is_sunday = (c == 0)
+            holiday = is_holiday(date_obj)
+            red = is_sunday or holiday
+
+            draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y + weekdays_h + r * date_h, text=day_text, text_size=10, red=red, anchor="mt")
 
 
 def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
