@@ -18,7 +18,6 @@ from calendar_meta import (
 
 WIDTH = 400
 HEIGHT = 300
-HEADER_H = 90
 
 # レイアウト定数
 CAL_W = WIDTH // 7
@@ -41,19 +40,21 @@ def next_month_year(year: int, month: int) -> tuple[int, int]:
     return ny, nm
 
 
-def draw_header(draw: Draw, year: int, month: int) -> None:
+def draw_header(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     # 年表示と和暦等のヘッダ描画をまとめた関数
-    draw.draw_text(x=80, y=65, text=str(year), text_size=20, anchor="rb")
-
+    header_h = HEIGHT - main_cal_h
     d = datetime.date(year, month, 1)
     jp_era = get_jp_era(d)
-    ETO = get_eto(d)
+    eto = get_eto(d)
     month_name = get_traditional_month(month)
 
-    draw.draw_text(x=80, y=75, text=f"{jp_era}年{ETO}", text_size=8, anchor="rb")
-    draw.draw_text(x=120, y=75, text=str(month), text_size=50, anchor="mb")
-    draw.draw_text(x=160, y=65, text=calendar.month_abbr[month].upper(), text_size=20, anchor="lb")
-    draw.draw_text(x=160, y=75, text=month_name, text_size=8, anchor="lb")
+    draw.draw_text(x=80, y= header_h // 2, text=str(year), text_size=20, anchor="rm")
+    draw.draw_text(x=80, y= header_h // 2 + 16, text=f"{jp_era}年{eto}", text_size=8, anchor="rm")
+
+    draw.draw_text(x=120, y= header_h // 2, text=str(month), text_size=50, anchor="mm")
+
+    draw.draw_text(x=160, y= header_h // 2, text=calendar.month_abbr[month].upper(), text_size=20, anchor="lm")
+    draw.draw_text(x=160, y= header_h // 2 + 16, text=month_name, text_size=8, anchor="lm")
 
 def draw_weekday_cell(draw: Draw, cx: int, cy: int, cw: int, ch: int, text: str, right: bool, is_sunday: bool):
     draw.draw_cell_line(x=cx, y=cy, w=cw, h=ch, top=True, right=right)
@@ -182,11 +183,11 @@ def make_calendar(year: int, month: int) -> None:
 
     draw = Draw(WIDTH, HEIGHT)
 
-    # ヘッダ描画
-    draw_header(draw, year, month)
-
     # メインカレンダー
     main_cal_h = draw_main_calendar(draw=draw, year=year, month=month)
+
+    # ヘッダ描画
+    draw_header(draw, year, month, main_cal_h)
 
     # サブカレンダー
     draw_sub_calendar(draw=draw, year=next_year, month=next_month, main_cal_h=main_cal_h)
