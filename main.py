@@ -38,6 +38,31 @@ def to_zenkaku(s: str) -> str:
         "０１２３４５６７８９"
     ))
 
+
+def next_month_year(year: int, month: int) -> tuple[int, int]:
+    nm = month + 1
+    ny = year
+    if nm > 12:
+        nm = 1
+        ny += 1
+    return ny, nm
+
+
+def draw_header(draw: Draw, year: int, month: int) -> None:
+    # 年表示と和暦等のヘッダ描画をまとめた関数
+    draw.draw_text(x=80, y=65, text=str(year), text_size=20, anchor="rb")
+
+    d = datetime.date(year, month, 1)
+    era_name = EraDate.from_date(d).strftime("%-K")
+    year_text = EraDate.from_date(d).strftime("%-Y")
+    year_text = "元" if year_text == "1" else to_zenkaku(year_text)
+    kanshi = KANSHI[(d.year - 4) % 60]
+
+    draw.draw_text(x=80, y=75, text=f"{era_name}{year_text}年{kanshi}", text_size=8, anchor="rb")
+    draw.draw_text(x=120, y=75, text=str(month), text_size=50, anchor="mb")
+    draw.draw_text(x=160, y=65, text=calendar.month_abbr[month].upper(), text_size=20, anchor="lb")
+    draw.draw_text(x=160, y=75, text=JM[month], text_size=8, anchor="lb")
+
 # 初期化（1回だけ）
 ts = load.timescale()
 eph = load("de421.bsp")
@@ -236,90 +261,18 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
 
 
 def make_calendar(year: int, month: int) -> None:
-    # 次の月
-    next_month = month + 1
-    next_year = year
-    if next_month > 12:
-        next_month = 1
-        next_year += 1
-
-    # 高さ指定
-    # 5週以下なら5週分、6週以上なら6週分の高さを確保
-    header_h = 90
-
-    sub_cal_h = header_h - 10
-    sub_cal_w = 18*7
+    next_year, next_month = next_month_year(year, month)
 
     draw = Draw(WIDTH, HEIGHT)
 
-    # 年月表示
-    draw.draw_text(
-        x=80,
-        y=65,
-        text=str(year),
-        text_size=20,
-        anchor="rb"
-    )
-
-    # 和暦
-    d = datetime.date(year, month, 1)
-
-    # 元号名
-    era_name = EraDate.from_date(d).strftime("%-K")
-
-    # 和暦年
-    year_text = EraDate.from_date(d).strftime("%-Y")
-    year_text = "元" if year_text == "1" else to_zenkaku(year_text)
-
-    # 干支
-    kanshi = KANSHI[(d.year - 4) % 60]
-
-    draw.draw_text(
-        x=80,
-        y=75,
-        text=f"{era_name}{year_text}年{kanshi}",
-        text_size=8,
-        anchor="rb"
-    )
-
-    draw.draw_text(
-        x=120,
-        y=75,
-        text=str(month),
-        text_size=50,
-        anchor="mb"
-    )
-
-    draw.draw_text(
-        x=160,
-        y=65,
-        text=calendar.month_abbr[month].upper(),
-        text_size=20,
-        anchor="lb"
-    )
-
-    draw.draw_text(
-        x=160,
-        y=75,
-        text=JM[month],
-        text_size=8,
-        anchor="lb"
-    )
+    # ヘッダ描画
+    draw_header(draw, year, month)
 
     # メインカレンダー
-    main_cal_h = draw_main_calendar(
-        draw=draw,
-        year=year,
-        month=month,
-    )
+    main_cal_h = draw_main_calendar(draw=draw, year=year, month=month)
 
     # サブカレンダー
-    draw_sub_calendar(
-        draw=draw,
-        year=next_year,
-        month=next_month,
-        main_cal_h=main_cal_h
-    )
+    draw_sub_calendar(draw=draw, year=next_year, month=next_month, main_cal_h=main_cal_h)
 
     output_dir = os.path.join(os.path.dirname(__file__), "calendars")
     os.makedirs(output_dir, exist_ok=True)
