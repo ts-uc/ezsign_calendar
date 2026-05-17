@@ -75,15 +75,41 @@ def get_moon_phase_type(date: datetime.date) -> int | None:
     return int(phases[0]) if len(phases) else None
 
 
-def is_holiday(date: datetime.date) -> bool:
+def get_commemorative_holiday(date: datetime.date) -> str | None:
+    if date.month == 2 and date.day == 14:
+        return "バレンタイン"
+    if date.month == 3 and date.day == 3:
+        return "ひな祭り"
+    if date.month == 3 and date.day == 14:
+        return "ホワイトデー"
+    if date.month == 5 and date.weekday() == 6 and 8 <= date.day <= 14:
+        return "母の日"
+    if date.month == 6 and date.weekday() == 6 and 15 <= date.day <= 21:
+        return "父の日"
+    if date.month == 9 and date.day == 1:
+        return "防災の日"
+    if date.month == 10 and date.day == 31:
+        return "ハロウィーン"
+    if date.month == 11 and date.day == 15:
+        return "七五三"
+    if date.month == 12 and date.day == 24:
+        return "クリスマスイブ"
+    if date.month == 12 and date.day == 25:
+        return "クリスマス"
+    if date.month == 12 and date.day == 31:
+        return "大晦日"
+    return None
+
+
+def is_national_holiday(date: datetime.date) -> bool:
     return jpholiday.is_holiday(date)
 
 
 def get_holiday(date: datetime.date) -> str | None:
-    if not is_holiday(date):
-        return None
-    name = jpholiday.is_holiday_name(date)
-    return "振替休日" if "振替休日" in name else name
+    if jpholiday.is_holiday(date):
+        name = jpholiday.is_holiday_name(date)
+        return "振替休日" if "振替休日" in name else name
+    return get_commemorative_holiday(date)
 
 
 def get_rokuyou(date: datetime.date) -> str:

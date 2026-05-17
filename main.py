@@ -9,7 +9,7 @@ from calendar_meta import (
     get_eto,
     get_traditional_month,
     get_moon_phase_type,
-    is_holiday,
+    is_national_holiday,
     get_holiday,
     get_rokuyou,
     get_sekki,
@@ -80,8 +80,8 @@ def draw_date_cell(
 
     day = date_obj.day
 
-    holiday = is_holiday(date_obj)
-    red = is_sunday or holiday
+    national_holiday = is_national_holiday(date_obj)
+    red = is_sunday or national_holiday
 
     # 日付表示
     draw.draw_text(x=cx + 35 - 14, y=cy + 4, text=str(day), font_key=draw.FontKey.J10D if is_other_month else draw.FontKey.J20, red=red, hatched=is_other_month,anchor="mt")
@@ -105,7 +105,7 @@ def draw_date_cell(
     # 祝日名
     holiday_name = get_holiday(date_obj)
     if holiday_name:
-        draw.draw_text(x=cx + cw // 2, y=cy + 4 + 21, text=holiday_name, font_key=draw.FontKey.MISAKI, anchor="mt", red=True)
+        draw.draw_text(x=cx + cw // 2, y=cy + 4 + 21, text=holiday_name, font_key=draw.FontKey.MISAKI, anchor="mt", red=national_holiday)
 
 def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     cal_w = SUB_CAL_W
@@ -137,7 +137,7 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> Non
             day_text = str(date_obj.day)
 
             is_sunday = (c == 0)
-            holiday = is_holiday(date_obj)
+            holiday = is_national_holiday(date_obj)
             red = is_sunday or holiday
 
             draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y + weekdays_h + r * date_h, text=day_text, font_key=draw.FontKey.J10, red=red, anchor="mt")
