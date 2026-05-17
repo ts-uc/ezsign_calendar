@@ -27,7 +27,7 @@ ETO = [
 
 # 伝統的月名
 TRADITIONAL_MONTH = ["", "睦月", "如月", "弥生", "卯月", "皐月", "水無月",
-      "文月", "葉月", "長月", "神無月", "霜月", "師走"]
+                     "文月", "葉月", "長月", "神無月", "霜月", "師走"]
 
 # Skyfield 初期化（1回だけ）
 ts = load.timescale()
@@ -98,12 +98,17 @@ def get_commemorative_holiday(date: datetime.date) -> str | None:
         return "クリスマス"
     if date.month == 12 and date.day == 31:
         return "大晦日"
-    
+
     k = Kyureki.from_ymd(date.year, date.month, date.day)
     if k.leap_month == 0 and k.month == 1 and k.day == 1:
         return "旧正月"
     elif k.leap_month == 0 and k.month == 8 and k.day == 15:
         return "十五夜"
+
+    sd = sxtwl.fromSolar(date.year, date.month, date.day)
+    if sd.after(1).getJieQi() == 3:
+        return "節分"
+
     return None
 
 
