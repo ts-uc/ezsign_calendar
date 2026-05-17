@@ -57,7 +57,7 @@ def draw_header(draw: Draw, year: int, month: int) -> None:
 
 def draw_weekday_cell(draw: Draw, cx: int, cy: int, cw: int, ch: int, text: str, right: bool, is_sunday: bool):
     draw.draw_cell_line(x=cx, y=cy, w=cw, h=ch, top=True, right=right)
-    draw.draw_text(x=cx + 3, y=cy + 4, text=text, text_size=10, red=is_sunday, anchor="lt")
+    draw.draw_text(x=cx + cw // 2, y=cy + 4, text=text, text_size=10, red=is_sunday, anchor="mt")
 
 
 def draw_date_cell(
@@ -83,25 +83,25 @@ def draw_date_cell(
     red = is_sunday or holiday
 
     # 日付表示
-    draw.draw_text(x=cx + 3 + 15, y=cy + 4, text=str(day), text_size=20, red=red, anchor="mt")
+    draw.draw_text(x=cx + 35 - 14, y=cy + 4, text=str(day), text_size=20, red=red, anchor="mt")
 
     # 月相
     mp = get_moon_phase_type(d)
     if mp is not None:
-        draw.draw_moon_phase(x=cx + cw - 2 - 12, y=cy + ch - 2 - 12, w=12, h=12, phase=mp)
+        draw.draw_moon_phase(x=cx + cw - 4 - 12, y=cy + ch - 2 - 12, w=12, h=12, phase=mp)
 
     # 六曜
-    draw.draw_text(x=cx + cw - 3, y=cy + 4, text=get_rokuyou(d), text_size=8, anchor="rt")
+    draw.draw_text(x=cx + 35 + 10, y=cy + 4, text=get_rokuyou(d), text_size=8, anchor="mt")
 
     # 二十四節気
     jieqi = get_sekki(d)
     if jieqi:
-        draw.draw_text(x=cx + cw - 3, y=cy + 4 + 10, text=jieqi, text_size=8, anchor="rt")
+        draw.draw_text(x=cx + 35 + 10, y=cy + 4 + 10, text=jieqi, text_size=8, anchor="mt")
 
     # 祝日名
     holiday_name = get_holiday(d)
     if holiday_name:
-        draw.draw_text(x=cx + 3, y=cy + 4 + 21, text=holiday_name, text_size=8, anchor="lt", red=True)
+        draw.draw_text(x=cx + cw // 2, y=cy + 4 + 21, text=holiday_name, text_size=8, anchor="mt", red=True)
 
 def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     cal_w = SUB_CAL_W
