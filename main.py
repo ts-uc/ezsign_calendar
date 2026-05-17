@@ -67,40 +67,44 @@ def draw_date_cell(
     cy: int,
     cw: int,
     ch: int,
-    day: int,
-    year: int,
-    month: int,
+    date_obj: datetime.date,
+    target_month: int,
     right: bool,
     is_sunday: bool = False,
 ):
     # 罫線
     draw.draw_cell_line(x=cx, y=cy, w=cw, h=ch, top=True, right=right)
 
-    if day == 0:
+    # 隣接月の日付は薄く表示するため、チェック
+    is_other_month = date_obj.month != target_month
+    if is_other_month:
         return
 
-    d = datetime.date(year, month, day)
-    holiday = is_holiday(d)
+    day = date_obj.day
+    year = date_obj.year
+    month = date_obj.month
+
+    holiday = is_holiday(date_obj)
     red = is_sunday or holiday
 
     # 日付表示
     draw.draw_text(x=cx + 35 - 14, y=cy + 4, text=str(day), text_size=20, red=red, anchor="mt")
 
     # 月相
-    mp = get_moon_phase_type(d)
+    mp = get_moon_phase_type(date_obj)
     if mp is not None:
         draw.draw_moon_phase(x=cx + cw - 4 - 12, y=cy + ch - 2 - 12, w=12, h=12, phase=mp)
 
     # 六曜
-    draw.draw_text(x=cx + 35 + 10, y=cy + 4, text=get_rokuyou(d), text_size=8, anchor="mt")
+    draw.draw_text(x=cx + 35 + 10, y=cy + 4, text=get_rokuyou(date_obj), text_size=8, anchor="mt")
 
     # 二十四節気
-    jieqi = get_sekki(d)
+    jieqi = get_sekki(date_obj)
     if jieqi:
         draw.draw_text(x=cx + 35 + 10, y=cy + 4 + 10, text=jieqi, text_size=8, anchor="mt")
 
     # 祝日名
-    holiday_name = get_holiday(d)
+    holiday_name = get_holiday(date_obj)
     if holiday_name:
         draw.draw_text(x=cx + cw // 2, y=cy + 4 + 21, text=holiday_name, text_size=8, anchor="mt", red=True)
 
@@ -109,7 +113,7 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> Non
     x = WIDTH - cal_w * 7 - 5
 
     cal = calendar.Calendar(firstweekday=6)
-    weeks = cal.monthdayscalendar(year, month)
+    weeks = cal.monthdatescalendar(year, month)
     len_weeks = 5 if len(weeks) <= 5 else 6
     date_h = SUB_DATE_H_5W if len_weeks == 5 else SUB_DATE_H_6W
     weekdays_h = date_h
@@ -127,15 +131,19 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> Non
 
     # 日付部分のグリッド
     for r, row in enumerate(weeks):
-        for c, day in enumerate(row):
-            draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y + weekdays_h + r * date_h, text="" if day == 0 else str(day), text_size=10, red=(c == 0), anchor="mt")
+        for c, date_obj in enumerate(row):
+            # 隣接月の日付のみ表示
+            if date_obj.month != month:
+                continue
+            day_text = str(date_obj.day)
+            draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y + weekdays_h + r * date_h, text=day_text, text_size=10, red=(c == 0), anchor="mt")
 
 
 def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
     cal_w = WIDTH // 7
 
     cal = calendar.Calendar(firstweekday=6)
-    weeks = cal.monthdayscalendar(year, month)
+    weeks = cal.monthdatescalendar(year, month)
     len_weeks = 5 if len(weeks) <= 5 else 6
     date_h = 40 if len_weeks == 5 else 34
     weekdays_h = 16
@@ -156,7 +164,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
 
     # 日付部分のグリッド
     for r, row in enumerate(weeks):
-        for c, day in enumerate(row):
+        for c, date_obj in enumerate(row):
             cx = c * cal_w
             cy = y + weekdays_h + r * date_h
             cw = cal_w
@@ -168,8 +176,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
                 cy,
                 cw,
                 ch,
-                day,
-                year,
+                date_obj,
                 month,
                 right=(c != 6),
                 is_sunday=(c == 0),
