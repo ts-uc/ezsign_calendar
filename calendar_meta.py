@@ -82,12 +82,22 @@ def get_commemorative_holiday(date: datetime.date) -> str | None:
         return "ひな祭り"
     if date.month == 3 and date.day == 14:
         return "ホワイトデー"
+    if date.month == 5 and date.day == 1:
+        return "メーデー"
     if date.month == 5 and date.weekday() == 6 and 8 <= date.day <= 14:
         return "母の日"
     if date.month == 6 and date.weekday() == 6 and 15 <= date.day <= 21:
         return "父の日"
+    if date.month == 6 and date.day == 10:
+        return "時の記念日"
+    if date.month == 7 and date.day == 7:
+        return "七夕"
+    if date.month == 8 and date.day == 7:
+        return "七夕"
     if date.month == 9 and date.day == 1:
         return "防災の日"
+    if date.month == 10 and date.day == 14:
+        return "鉄道の日"
     if date.month == 10 and date.day == 31:
         return "ハロウィーン"
     if date.month == 11 and date.day == 15:
