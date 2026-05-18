@@ -75,6 +75,62 @@ def get_moon_phase_type(date: datetime.date) -> int | None:
     return int(phases[0]) if len(phases) else None
 
 
+JST = datetime.timezone(datetime.timedelta(hours=9))
+
+
+def _solar_longitude_crossing_date(year: int, longitude_deg: float) -> datetime.date:
+    """
+    太陽黄経が longitude_deg を超える瞬間を Skyfield で求め、
+    その日本時間の日付を返す。
+    """
+    ts = load.timescale()
+    eph = load("de421.bsp")
+    earth = eph["earth"]
+    sun = eph["sun"]
+
+    def is_after_longitude(t):
+        apparent = earth.at(t).observe(sun).apparent()
+        _, lon, _ = apparent.ecliptic_latlon(epoch="date")
+        return lon.degrees >= longitude_deg
+
+    is_after_longitude.step_days = 1
+
+    # 夏土用・立秋は7〜8月なので、この範囲を探索
+    t0 = ts.utc(year, 7, 1)
+    t1 = ts.utc(year, 8, 15)
+
+    times, values = almanac.find_discrete(t0, t1, is_after_longitude)
+
+    for t, v in zip(times, values):
+        if v == 1:
+            return t.utc_datetime().astimezone(JST).date()
+
+    raise ValueError(f"{year}年の太陽黄経 {longitude_deg}° 通過日が見つかりませんでした")
+
+
+def _is_ushi_day(date: datetime.date) -> bool:
+    """
+    干支が丑の日なら True。
+    sxtwl の dz は 0=子, 1=丑, ...
+    """
+    day_gz = sxtwl.fromSolar(date.year, date.month, date.day).getDayGZ()
+    return day_gz.dz == 1
+
+
+def is_risshuu_doyo_no_ushi(date: datetime.date) -> bool:
+    """
+    date が「立秋前の夏土用の丑の日」なら True。
+
+    定気法:
+      夏土用入り = 太陽黄経117°
+      立秋       = 太陽黄経135°
+    """
+    doyo_iri = _solar_longitude_crossing_date(date.year, 117.0)
+    risshuu = _solar_longitude_crossing_date(date.year, 135.0)
+
+    return doyo_iri <= date < risshuu and _is_ushi_day(date)
+
+
 def get_commemorative_holiday(date: datetime.date) -> str | None:
     if date.month == 2 and date.day == 14:
         return "バレンタイン"
@@ -118,6 +174,9 @@ def get_commemorative_holiday(date: datetime.date) -> str | None:
     sd = sxtwl.fromSolar(date.year, date.month, date.day)
     if sd.after(1).getJieQi() == 3:
         return "節分"
+    
+    if (date.month == 7 or date.month == 8) and is_risshuu_doyo_no_ushi(date):
+        return "土用の丑"
 
     return None
 
