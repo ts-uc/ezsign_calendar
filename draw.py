@@ -114,10 +114,17 @@ class Draw:
         parts: list[tuple[str, tuple[int, int, int]]],
         font_key: object | None = None,
         anchor="lm",
+        shift_func: object | None = None,
     ):
         font = self.select_font(font_key)
 
         cur_x = x
+
+        if shift_func is not None:
+            total_text = "".join(text for text, _ in parts)
+            total_width = self.draw.textlength(total_text, font=font)
+            shift = shift_func(total_width)
+            cur_x += shift
 
         for text, color in parts:
             self.draw.text(
