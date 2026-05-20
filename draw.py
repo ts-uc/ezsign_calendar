@@ -112,7 +112,7 @@ class Draw:
                     if xx % 2 == 0 and yy % 2 == 0:
                         img_pixels[xx, yy] = color
 
-    def _draw_dashed_line(
+    def draw_dashed_line(
         self,
         x1: int,
         y1: int,
@@ -153,7 +153,7 @@ class Draw:
             lines.append((x + w, y, x + w, y + h))
 
         for x1, y1, x2, y2 in lines:
-            self._draw_dashed_line(x1, y1, x2, y2)
+            self.draw_dashed_line(x1, y1, x2, y2)
 
 
     def draw_moon_phase(self, x: int, y: int, w: int, h: int, phase: int):
