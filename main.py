@@ -56,9 +56,10 @@ def draw_header(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     draw.draw_text(x=160, y= header_h // 2, text=calendar.month_abbr[month].upper(), font_key=draw.FontKey.J20, anchor="lm")
     draw.draw_text(x=160, y= header_h // 2 + 16, text=month_name, font_key=draw.FontKey.MISAKI, anchor="lm")
 
+
 def draw_weekday_cell(draw: Draw, cx: int, cy: int, cw: int, ch: int, text: str, right: bool, is_sunday: bool):
     draw.draw_cell_line(x=cx, y=cy, w=cw, h=ch, top=True, right=right)
-    draw.draw_text(x=cx + cw // 2, y=cy + 4, text=text, font_key=draw.FontKey.J10, red=is_sunday, anchor="mt")
+    draw.draw_text(x=cx + 20, y=cy + 4, text=text, font_key=draw.FontKey.J10, red=is_sunday, anchor="mt")
 
 
 def draw_date_cell(
@@ -84,28 +85,10 @@ def draw_date_cell(
     red = is_sunday or national_holiday
 
     # 日付表示
-    draw.draw_text(x=cx + 35 - 14, y=cy + 4, text=str(day), font_key=draw.FontKey.J10D if is_other_month else draw.FontKey.J20, red=red, hatched=is_other_month,anchor="mt")
+    draw.draw_text(x=cx + 20, y=cy + 4, text=str(day), font_key=draw.FontKey.J10D if is_other_month else draw.FontKey.J20, red=red, hatched=is_other_month,anchor="mt")
 
     if is_other_month:
         return
-
-    # 月相
-    mp = get_moon_phase_type(date_obj)
-    if mp is not None:
-        draw.draw_moon_phase(x=cx + cw - 4 - 12, y=cy + ch - 2 - 12, w=12, h=12, phase=mp)
-
-    # 六曜
-    draw.draw_text(x=cx + 35 + 10, y=cy + 4, text=get_rokuyou(date_obj), font_key=draw.FontKey.MISAKI, anchor="mt")
-
-    # 二十四節気
-    jieqi = get_sekki(date_obj)
-    if jieqi:
-        draw.draw_text(x=cx + 35 + 10, y=cy + 4 + 10, text=jieqi, font_key=draw.FontKey.MISAKI, anchor="mt")
-
-    # 祝日名
-    holiday_name = get_holiday(date_obj)
-    if holiday_name:
-        draw.draw_text(x=cx + cw // 2, y=cy + 4 + 21, text=holiday_name, font_key=draw.FontKey.MISAKI, anchor="mt", red=national_holiday)
 
 def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     cal_w = SUB_CAL_W
