@@ -27,6 +27,10 @@ SUB_CAL_W = 18
 SUB_DATE_H_5W = 12
 SUB_DATE_H_6W = 11
 
+# 色
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+
 
 def next_month_year(year: int, month: int) -> tuple[int, int]:
     nm = month + 1
@@ -56,7 +60,7 @@ def draw_header(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
 
 def draw_weekday_cell(draw: Draw, cx: int, cy: int, cw: int, ch: int, text: str, right: bool, is_sunday: bool):
     draw.draw_cell_line(x=cx, y=cy, w=cw, h=ch, top=True, right=right)
-    draw.draw_text(x=cx + 20, y=cy + 4, text=text, font_key=draw.FontKey.J10, red=is_sunday, anchor="mt")
+    draw.draw_text(x=cx + 20, y=cy + 4, text=text, font_key=draw.FontKey.J10, color=RED if is_sunday else BLACK, anchor="mt")
 
 
 def draw_date_cell(
@@ -82,7 +86,7 @@ def draw_date_cell(
     red = is_sunday or national_holiday
 
     # 日付表示
-    draw.draw_text(x=cx + 20, y=cy + 4, text=str(day), font_key=draw.FontKey.J10D if is_other_month else draw.FontKey.J20, red=red, hatched=is_other_month,anchor="mt")
+    draw.draw_text(x=cx + 20, y=cy + 4, text=str(day), font_key=draw.FontKey.J10D if is_other_month else draw.FontKey.J20, color=RED if red else BLACK, hatched=is_other_month, anchor="mt")
 
     if is_other_month:
         return
@@ -106,7 +110,7 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> Non
     # 曜日部分のグリッド
     weekdays = ["S", "M", "T", "W", "T", "F", "S"]
     for c, text in enumerate(weekdays):
-        draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y, text=text, font_key=draw.FontKey.J10, red=(c == 0), anchor="mt")
+        draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y, text=text, font_key=draw.FontKey.J10, color=RED if (c == 0) else BLACK, anchor="mt")
 
     # 日付部分のグリッド
     for r, row in enumerate(weeks):
@@ -120,7 +124,7 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> Non
             holiday = is_national_holiday(date_obj)
             red = is_sunday or holiday
 
-            draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y + weekdays_h + r * date_h, text=day_text, font_key=draw.FontKey.J10, red=red, anchor="mt")
+            draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y + weekdays_h + r * date_h, text=day_text, font_key=draw.FontKey.J10, color=RED if red else BLACK, anchor="mt")
 
 
 def draw_main_calendar(draw: Draw, year: int, month: int) -> int:

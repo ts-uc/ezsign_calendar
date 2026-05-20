@@ -79,14 +79,12 @@ class Draw:
         y: int,
         text: str,
         font_key: object | None = None,
-        red: bool = False,
+        color: tuple[int, int, int] = (0, 0, 0),
         anchor: str = "mm",
         hatched: bool = False,
     ):
         # フォント選択
         font = self.select_font(font_key)
-
-        color = (255, 0, 0) if red else (0, 0, 0)
 
         if not hatched:
             # 通常描画
