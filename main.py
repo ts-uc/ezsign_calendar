@@ -123,7 +123,7 @@ def draw_date_cell(
     shift = partial(holiday_name_shift, cw)
 
     draw.draw_rich_text(
-        x=cx, y=cy + 4 + 21,
+        x=cx, y=cy + (26 if ch == DATE_H_5W else 25),
         parts=parts,
         font_key=draw.FontKey.MISAKI,
         anchor="lt",
