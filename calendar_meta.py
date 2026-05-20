@@ -8,6 +8,9 @@ from qreki import Kyureki
 from skyfield import almanac
 from skyfield.api import load
 
+
+from skyfield.framelib import ecliptic_frame
+
 # 二十四節気名称
 SEKKI = [
     "冬至", "小寒", "大寒", "立春", "雨水", "啓蟄", "春分", "清明",
@@ -29,9 +32,12 @@ ETO = [
 TRADITIONAL_MONTH = ["", "睦月", "如月", "弥生", "卯月", "皐月", "水無月",
                      "文月", "葉月", "長月", "神無月", "霜月", "師走"]
 
-# Skyfield 初期化（1回だけ）
+# 初期化は一度だけ
 ts = load.timescale()
 eph = load("de421.bsp")
+
+earth = eph["earth"]
+sun = eph["sun"]
 
 
 def to_zenkaku(s: str) -> str:
@@ -87,3 +93,45 @@ def get_national_holiday(date: datetime.date) -> str | None:
         name = jpholiday.is_holiday_name(date)
         return "振替休日" if "振替休日" in name else name
     return None
+
+
+def get_moon_phase_type(date: datetime.date) -> int | None:
+    # JSTの 00:00
+    start_jst = datetime.datetime.combine(
+        date,
+        datetime.time.min,
+        tzinfo=JST,
+    )
+
+    # 翌日の JST 00:00
+    end_jst = start_jst + datetime.timedelta(days=1)
+
+    # UTCへ変換
+    start_utc = start_jst.astimezone(datetime.timezone.utc)
+    end_utc = end_jst.astimezone(datetime.timezone.utc)
+
+    t0 = ts.from_datetime(start_utc)
+    t1 = ts.from_datetime(end_utc)
+
+    f = almanac.moon_phases(eph)
+    _, phases = almanac.find_discrete(t0, t1, f)
+
+    return int(phases[0]) if len(phases) else None
+
+
+def solar_ecliptic_longitude(date: datetime.date) -> float:
+    # 日本時間の 0:00
+    dt_jst = datetime.datetime.combine(
+        date,
+        datetime.time.min,
+        tzinfo=JST,
+    )
+
+    # UTCへ変換
+    dt_utc = dt_jst.astimezone(datetime.timezone.utc)
+    t = ts.from_datetime(dt_utc)
+
+    apparent = earth.at(t).observe(sun).apparent()
+    _, lon, _ = apparent.frame_latlon(ecliptic_frame)
+
+    return lon.degrees % 360
