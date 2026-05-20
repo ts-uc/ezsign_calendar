@@ -13,6 +13,7 @@ from calendar_meta import (
     get_sekki,
     get_zassetsu,
     next_month_year,
+    get_moon_phase_type,
 )
 
 WIDTH = 400
@@ -114,6 +115,11 @@ def draw_date_cell(
         font_key=draw.FontKey.MISAKI,
         anchor="lt"
     )
+
+    # 月相
+    mp = get_moon_phase_type(date_obj)
+    if mp is not None:
+        draw.draw_moon_phase(x=cx + 40, y=cy + 10, w=12, h=12, phase=mp)
 
 
 
