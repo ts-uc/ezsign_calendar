@@ -20,10 +20,11 @@ WIDTH = 400
 HEIGHT = 300
 
 # レイアウト定数
-CAL_W = WIDTH // 7
+CAL_W = 57
+CAL_W_SATURDAY = 58
 DATE_H_5W = 40
 DATE_H_6W = 34
-WEEKDAYS_H = 16
+WEEKDAYS_H = 17
 
 # サブカレンダー定数
 SUB_CAL_W = 18
@@ -127,8 +128,6 @@ def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> Non
 
 
 def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
-    cal_w = WIDTH // 7
-
     cal = calendar.Calendar(firstweekday=6)
     weeks = cal.monthdatescalendar(year, month)
     
@@ -140,8 +139,8 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
             weeks.append(next_weeks[0])
     
     len_weeks = len(weeks)
-    date_h = 40 if len_weeks == 5 else 34
-    weekdays_h = 16
+    date_h = DATE_H_5W if len_weeks == 5 else DATE_H_6W
+    weekdays_h = WEEKDAYS_H
 
     main_cal_h = weekdays_h + date_h * len_weeks
 
@@ -151,18 +150,18 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
     weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
     for c, text in enumerate(weekdays):
-        cx = c * cal_w
+        cx = c * CAL_W
         cy = y
-        cw = cal_w
+        cw = CAL_W_SATURDAY if c == 6 else CAL_W
         ch = weekdays_h
         draw_weekday_cell(draw, cx, cy, cw, ch, text, right=(c != 6), is_sunday=(c == 0))
 
     # 日付部分のグリッド
     for r, row in enumerate(weeks):
         for c, date_obj in enumerate(row):
-            cx = c * cal_w
+            cx = c * CAL_W
             cy = y + weekdays_h + r * date_h
-            cw = cal_w
+            cw = CAL_W_SATURDAY if c == 6 else CAL_W
             ch = date_h
 
             draw_date_cell(
