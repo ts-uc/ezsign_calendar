@@ -78,125 +78,12 @@ def get_moon_phase_type(date: datetime.date) -> int | None:
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
 
-def _solar_longitude_crossing_date(year: int, longitude_deg: float) -> datetime.date:
-    """
-    太陽黄経が longitude_deg を超える瞬間を Skyfield で求め、
-    その日本時間の日付を返す。
-    """
-    ts = load.timescale()
-    eph = load("de421.bsp")
-    earth = eph["earth"]
-    sun = eph["sun"]
-
-    def is_after_longitude(t):
-        apparent = earth.at(t).observe(sun).apparent()
-        _, lon, _ = apparent.ecliptic_latlon(epoch="date")
-        return lon.degrees >= longitude_deg
-
-    is_after_longitude.step_days = 1
-
-    # 夏土用・立秋は7〜8月なので、この範囲を探索
-    t0 = ts.utc(year, 7, 1)
-    t1 = ts.utc(year, 8, 15)
-
-    times, values = almanac.find_discrete(t0, t1, is_after_longitude)
-
-    for t, v in zip(times, values):
-        if v == 1:
-            return t.utc_datetime().astimezone(JST).date()
-
-    raise ValueError(f"{year}年の太陽黄経 {longitude_deg}° 通過日が見つかりませんでした")
-
-
-def _is_ushi_day(date: datetime.date) -> bool:
-    """
-    干支が丑の日なら True。
-    sxtwl の dz は 0=子, 1=丑, ...
-    """
-    day_gz = sxtwl.fromSolar(date.year, date.month, date.day).getDayGZ()
-    return day_gz.dz == 1
-
-
-def is_risshuu_doyo_no_ushi(date: datetime.date) -> bool:
-    """
-    date が「立秋前の夏土用の丑の日」なら True。
-
-    定気法:
-      夏土用入り = 太陽黄経117°
-      立秋       = 太陽黄経135°
-    """
-    doyo_iri = _solar_longitude_crossing_date(date.year, 117.0)
-    risshuu = _solar_longitude_crossing_date(date.year, 135.0)
-
-    return doyo_iri <= date < risshuu and _is_ushi_day(date)
-
-
-def get_commemorative_holiday(date: datetime.date) -> str | None:
-    if date.month == 2 and date.day == 14:
-        return "バレンタイン"
-    if date.month == 3 and date.day == 3:
-        return "ひな祭り"
-    if date.month == 3 and date.day == 14:
-        return "ホワイトデー"
-    if date.month == 5 and date.day == 1:
-        return "メーデー"
-    if date.month == 5 and date.weekday() == 6 and 8 <= date.day <= 14:
-        return "母の日"
-    if date.month == 6 and date.weekday() == 6 and 15 <= date.day <= 21:
-        return "父の日"
-    if date.month == 6 and date.day == 10:
-        return "時の記念日"
-    if date.month == 7 and date.day == 7:
-        return "七夕"
-    if date.month == 8 and date.day == 7:
-        return "七夕"
-    if date.month == 9 and date.day == 1:
-        return "防災の日"
-    if date.month == 10 and date.day == 14:
-        return "鉄道の日"
-    if date.month == 10 and date.day == 31:
-        return "ハロウィーン"
-    if date.month == 11 and date.day == 15:
-        return "七五三"
-    if date.month == 12 and date.day == 24:
-        return "クリスマスイブ"
-    if date.month == 12 and date.day == 25:
-        return "クリスマス"
-    if date.month == 12 and date.day == 31:
-        return "大晦日"
-
-    k = Kyureki.from_ymd(date.year, date.month, date.day)
-    if k.leap_month == 0 and k.month == 1 and k.day == 1:
-        return "旧正月"
-    elif k.leap_month == 0 and k.month == 8 and k.day == 15:
-        return "十五夜"
-
-    sd = sxtwl.fromSolar(date.year, date.month, date.day)
-    if sd.after(1).getJieQi() == 3:
-        return "節分"
-    
-    if (date.month == 7 or date.month == 8) and is_risshuu_doyo_no_ushi(date):
-        return "土用の丑"
-
-    return None
-
-
 def is_national_holiday(date: datetime.date) -> bool:
     return jpholiday.is_holiday(date)
 
 
-def get_holiday(date: datetime.date) -> str | None:
+def get_national_holiday(date: datetime.date) -> str | None:
     if jpholiday.is_holiday(date):
         name = jpholiday.is_holiday_name(date)
         return "振替休日" if "振替休日" in name else name
-    return get_commemorative_holiday(date)
-
-
-def get_rokuyou(date: datetime.date) -> str:
-    k = Kyureki.from_ymd(date.year, date.month, date.day)
-    return k.rokuyou
-
-
-def get_sekki(date: datetime.date) -> str | None:
-    sd = sxtwl.fromSolar(date.year, date.month, date.day)
-    return SEKKI[sd.getJieQi()] if sd.hasJieQi() else None
+    return None
