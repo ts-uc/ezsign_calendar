@@ -113,7 +113,7 @@ def draw_date_cell(
         parts.append((holiday_name, RED))
 
     sekki_name = get_sekki(date_obj)
-    if sekki_name:
+    if sekki_name and not sekki_name.startswith("春分") and not sekki_name.startswith("秋分"):  
         parts.append((sekki_name, BLACK))
     
     zassetsu_name = get_zassetsu(date_obj)
