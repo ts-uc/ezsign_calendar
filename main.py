@@ -2,6 +2,7 @@ import calendar
 import datetime
 import argparse
 import os
+from functools import partial
 
 from draw import Draw
 from calendar_meta import (
@@ -67,6 +68,16 @@ def draw_weekday_cell(draw: Draw, cx: int, cy: int, cw: int, ch: int, text: str,
     draw.draw_text(x=cx + 20, y=cy + 4, text=text, font_key=draw.FontKey.J10, color=RED if is_sunday else BLACK, anchor="mt")
 
 
+def holiday_name_shift(cell_w:int, text_w: int) -> int:
+    # 祝日名の表示位置を調整するための関数
+    if text_w <= 29:
+        return 5 + (29 - text_w + 1) // 2
+    elif text_w < cell_w - 10:
+        return 5
+    else:
+        return (cell_w - text_w + 1) // 2
+
+
 def draw_date_cell(
     draw: Draw,
     cx: int,
@@ -109,11 +120,14 @@ def draw_date_cell(
     if zassetsu_name:
         parts.append((zassetsu_name, BLACK))
 
+    shift = partial(holiday_name_shift, cw)
+
     draw.draw_rich_text(
-        x=cx + 5, y=cy + 4 + 21,
+        x=cx, y=cy + 4 + 21,
         parts=parts,
         font_key=draw.FontKey.MISAKI,
-        anchor="lt"
+        anchor="lt",
+        shift_func=shift if parts else None,
     )
 
     # 月相
