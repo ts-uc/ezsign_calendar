@@ -9,6 +9,7 @@ from calendar_meta import (
     get_eto,
     get_traditional_month,
     is_national_holiday,
+    get_national_holiday,
     next_month_year,
 )
 
@@ -90,6 +91,21 @@ def draw_date_cell(
 
     if is_other_month:
         return
+    
+    # 祝日名
+    parts = []
+    holiday_name = get_national_holiday(date_obj)
+    if holiday_name:
+        parts.append((holiday_name, RED))
+
+    draw.draw_rich_text(
+        x=cx + 5, y=cy + 4 + 21,
+        parts=parts,
+        font_key=draw.FontKey.MISAKI,
+        anchor="lt"
+    )
+
+
 
 def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
     cal_w = SUB_CAL_W
