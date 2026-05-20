@@ -106,6 +106,31 @@ class Draw:
                     if xx % 2 == 0 and yy % 2 == 0:
                         img_pixels[xx, yy] = color
 
+
+    def draw_rich_text(
+        self,
+        x: int,
+        y: int,
+        parts: list[tuple[str, tuple[int, int, int]]],
+        font_key: object | None = None,
+        anchor="lm",
+    ):
+        font = self.select_font(font_key)
+
+        cur_x = x
+
+        for text, color in parts:
+            self.draw.text(
+                (cur_x, y),
+                text,
+                font=font,
+                fill=color,
+                anchor=anchor,
+            )
+
+            cur_x += self.draw.textlength(text, font=font)
+
+
     def draw_dashed_line(
         self,
         x1: int,
