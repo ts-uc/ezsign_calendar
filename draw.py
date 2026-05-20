@@ -48,6 +48,22 @@ class Draw:
         self.img = Image.new("RGB", (w, h), (255, 255, 255))
         self.draw = ImageDraw.Draw(self.img)
 
+
+    def select_font(self, font_key: object | None) -> ImageFont.FreeTypeFont:
+        if font_key is not None:
+            if isinstance(font_key, str):
+                k = font_key.lower()
+                for fk in self.font_map:
+                    if fk.value == k or fk.name.lower() == k:
+                        return self.font_map[fk]
+            else:
+                try:
+                    return self.font_map[font_key]
+                except Exception:
+                    pass
+        return self.font_j10  # デフォルトフォント 
+
+
     def draw_text_center(self, x: int, y: int, w: int, h: int, text: str, font_key: object | None = None, red: bool = False):
         cx = x + w // 2
         cy = y + h // 2
@@ -66,29 +82,9 @@ class Draw:
         red: bool = False,
         anchor: str = "mm",
         hatched: bool = False,
-        hatch_parity: int = 0,
     ):
         # フォント選択
-        font = None
-
-        # font_key が指定されていれば優先して選択
-        if font_key is not None:
-            if isinstance(font_key, str):
-                k = font_key.lower()
-                for fk in self.font_map:
-                    if fk.value == k or fk.name.lower() == k:
-                        font = self.font_map[fk]
-                        break
-            else:
-                # Enum か既にキーオブジェクト
-                try:
-                    font = self.font_map[font_key]
-                except Exception:
-                    font = None
-
-        # 指定がなければ既定フォントを使用 (J10)
-        if font is None:
-            font = self.font_j10
+        font = self.select_font(font_key)
 
         color = (255, 0, 0) if red else (0, 0, 0)
 
