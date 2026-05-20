@@ -13,9 +13,9 @@ from skyfield.framelib import ecliptic_frame
 
 # 二十四節気名称
 SEKKI = [
-    "冬至", "小寒", "大寒", "立春", "雨水", "啓蟄", "春分", "清明",
-    "穀雨", "立夏", "小満", "芒種", "夏至", "小暑", "大暑", "立秋",
-    "処暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪"
+    "春分", "清明", "穀雨", "立夏", "小満", "芒種", "夏至", "小暑",
+    "大暑", "立秋", "処暑", "白露", "秋分", "寒露", "霜降", "立冬",
+    "小雪", "大雪", "冬至", "小寒", "大寒", "立春", "雨水", "啓蟄"
 ]
 
 # 干支
@@ -135,3 +135,41 @@ def solar_ecliptic_longitude(date: datetime.date) -> float:
     _, lon, _ = apparent.frame_latlon(ecliptic_frame)
 
     return lon.degrees % 360
+
+
+def get_sekki(date: datetime.date) -> str | None:
+    longitude = solar_ecliptic_longitude(date)
+    next_date = date + datetime.timedelta(days=1)
+    next_longitude = solar_ecliptic_longitude(next_date)
+
+    index = int(longitude // 15) % 24
+    next_index = int(next_longitude // 15) % 24
+
+    if index != next_index:
+        return SEKKI[next_index]
+
+    if (longitude <= 27 <= next_longitude or
+        longitude <= 117 <= next_longitude or
+        longitude <= 207 <= next_longitude or
+        longitude <= 297 <= next_longitude):
+        return "土用"
+    
+    if longitude <= 80 <= next_longitude:
+        return "入梅"
+
+    if longitude <= 100 <= next_longitude:
+        return "半夏生"
+
+    return None
+
+
+def get_zassetsu(date: datetime.date) -> str | None:
+    if get_sekki(date + datetime.timedelta(days=1)) == "立春":
+        return "節分"
+    if (get_sekki(date + datetime.timedelta(days=3)) == "春分" or
+        get_sekki(date + datetime.timedelta(days=3)) == "秋分"):
+        return "彼岸"
+    if get_sekki(date - datetime.timedelta(days=87)) == "立春":
+        return "八十八夜"
+    if get_sekki(date - datetime.timedelta(days=209)) == "立春":
+        return "二百十日"

@@ -10,6 +10,8 @@ from calendar_meta import (
     get_traditional_month,
     is_national_holiday,
     get_national_holiday,
+    get_sekki,
+    get_zassetsu,
     next_month_year,
 )
 
@@ -97,6 +99,14 @@ def draw_date_cell(
     holiday_name = get_national_holiday(date_obj)
     if holiday_name:
         parts.append((holiday_name, RED))
+
+    sekki_name = get_sekki(date_obj)
+    if sekki_name:
+        parts.append((sekki_name, BLACK))
+    
+    zassetsu_name = get_zassetsu(date_obj)
+    if zassetsu_name:
+        parts.append((zassetsu_name, BLACK))
 
     draw.draw_rich_text(
         x=cx + 5, y=cy + 4 + 21,
