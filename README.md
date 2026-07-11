@@ -34,7 +34,8 @@ python main.py --month 2025-01 2025-03 2026-12 --layout both
 
 ## ファイル構成
 
-- `main.py` - EZ Sign 版の描画と一括生成 CLI
+- `main.py` - レイアウト選択と一括生成 CLI
+- `ezsign.py` - EZ Sign 版の描画
 - `tepra.py` - テプラ版の描画（`tepra_calendar.py` 相当）
 - `draw.py` - 画像描画ヘルパー
 - `calendar_meta.py` - 祝日・暦情報

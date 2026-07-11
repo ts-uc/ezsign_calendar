@@ -1,254 +1,27 @@
-import calendar
+"""EZ Sign / テプラ用カレンダーの一括生成 CLI。"""
 
-import datetime
 import argparse
-from functools import partial
 from pathlib import Path
 
-from draw import Draw
+from ezsign import render as render_ezsign
 from tepra import render as render_tepra
-from calendar_meta import (
-    get_jp_era,
-    get_eto,
-    get_traditional_month,
-    is_national_holiday,
-    get_national_holiday,
-    get_sekki,
-    get_zassetsu,
-    get_moon_phase_type,
-    next_month_year,
-)
 
-WIDTH = 400
-HEIGHT = 300
-
-# レイアウト定数
-CAL_W = 57
-CAL_W_SATURDAY = 58
-DATE_H_5W = 40
-DATE_H_6W = 34
-WEEKDAYS_H = 17
-
-# サブカレンダー定数
-SUB_CAL_W = 18
-SUB_DATE_H_5W = 12
-SUB_DATE_H_6W = 11
-
-# 色
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
+LAYOUTS = {
+    "ezsign": render_ezsign,
+    "tepra": render_tepra,
+}
 
 
-def draw_header(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
-    # 年表示と和暦等のヘッダ描画をまとめた関数
-    header_h = HEIGHT - main_cal_h
-    d = datetime.date(year, month, 1)
-    jp_era = get_jp_era(d)
-    eto = get_eto(d)
-    month_name = get_traditional_month(month)
-
-    draw.draw_text(x=80, y= header_h // 2, text=str(year), font_key=draw.FontKey.J20, anchor="rm")
-    draw.draw_text(x=80, y= header_h // 2 + 16, text=f"{jp_era}年{eto}", font_key=draw.FontKey.MISAKI, anchor="rm")
-
-    draw.draw_text(x=120, y= header_h // 2, text=str(month), font_key=draw.FontKey.J25D, anchor="mm")
-
-    draw.draw_text(x=160, y= header_h // 2, text=calendar.month_abbr[month].upper(), font_key=draw.FontKey.J20, anchor="lm")
-    draw.draw_text(x=160, y= header_h // 2 + 16, text=month_name, font_key=draw.FontKey.MISAKI, anchor="lm")
-
-
-def draw_weekday_cell(draw: Draw, cx: int, cy: int, cw: int, ch: int, text: str, right: bool, is_sunday: bool):
-    draw.draw_cell_line(x=cx, y=cy, w=cw, h=ch, top=True, right=right)
-    draw.draw_text(x=cx + 20, y=cy + 4, text=text, font_key=draw.FontKey.J10, color=RED if is_sunday else BLACK, anchor="mt")
-
-
-def holiday_name_shift(cell_w:int, text_w: int) -> int:
-    # 祝日名の表示位置を調整するための関数
-    if text_w <= 29:
-        return 5 + (29 - text_w + 1) // 2
-    elif text_w < cell_w - 10:
-        return 5
-    else:
-        return (cell_w - text_w + 1) // 2
-
-
-def draw_date_cell(
-    draw: Draw,
-    cx: int,
-    cy: int,
-    cw: int,
-    ch: int,
-    date_obj: datetime.date,
-    target_month: int,
-    right: bool,
-    is_sunday: bool = False,
-):
-    # 罫線
-    draw.draw_cell_line(x=cx, y=cy, w=cw, h=ch, top=True, right=right)
-
-    # 隣接月の日付は薄く表示するため、チェック
-    is_other_month = date_obj.month != target_month
-
-    day = date_obj.day
-
-    national_holiday = is_national_holiday(date_obj)
-    red = is_sunday or national_holiday
-
-    # 日付表示
-    draw.draw_text(x=cx + 20, y=cy + 4, text=str(day), font_key=draw.FontKey.J10D if is_other_month else draw.FontKey.J20, color=RED if red else BLACK, hatched=is_other_month, anchor="mt")
-
-    if is_other_month:
-        return
-    
-    # 祝日名
-    parts = []
-    holiday_name = get_national_holiday(date_obj)
-    if holiday_name:
-        parts.append((holiday_name, RED))
-
-    sekki_name = get_sekki(date_obj)
-    if sekki_name and not sekki_name.startswith("春分") and not sekki_name.startswith("秋分"):  
-        parts.append((sekki_name, BLACK))
-    
-    zassetsu_name = get_zassetsu(date_obj)
-    if zassetsu_name:
-        parts.append((zassetsu_name, BLACK))
-
-    shift = partial(holiday_name_shift, cw)
-
-    draw.draw_rich_text(
-        x=cx, y=cy + (26 if ch == DATE_H_5W else 25),
-        parts=parts,
-        font_key=draw.FontKey.MISAKI,
-        anchor="lt",
-        shift_func=shift if parts else None,
-    )
-
-    # 月相
-    mp = get_moon_phase_type(date_obj)
-    if mp is not None:
-        draw.draw_moon_phase(x=cx + 40, y=cy + 10, w=12, h=12, phase=mp)
-
-
-
-def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
-    cal_w = SUB_CAL_W
-    x = WIDTH - cal_w * 7 - 5
-
-    cal = calendar.Calendar(firstweekday=6)
-    weeks = cal.monthdatescalendar(year, month)
-    len_weeks = 5 if len(weeks) <= 5 else 6
-    date_h = SUB_DATE_H_5W if len_weeks == 5 else SUB_DATE_H_6W
-    weekdays_h = date_h
-
-    h = weekdays_h + date_h * len_weeks
-    y = (HEIGHT - main_cal_h - h + 1) // 2
-
-    # 月表示
-    draw.draw_text(x=x - 3, y=y, text=str(month), font_key=draw.FontKey.J15, anchor="rt")
-
-    # 曜日部分のグリッド
-    weekdays = ["S", "M", "T", "W", "T", "F", "S"]
-    for c, text in enumerate(weekdays):
-        draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y, text=text, font_key=draw.FontKey.J10, color=RED if (c == 0) else BLACK, anchor="mt")
-
-    # 日付部分のグリッド
-    for r, row in enumerate(weeks):
-        for c, date_obj in enumerate(row):
-            # 隣接月の日付のみ表示
-            if date_obj.month != month:
-                continue
-            day_text = str(date_obj.day)
-
-            is_sunday = (c == 0)
-            holiday = is_national_holiday(date_obj)
-            red = is_sunday or holiday
-
-            draw.draw_text(x=x + c * cal_w + cal_w // 2, y=y + weekdays_h + r * date_h, text=day_text, font_key=draw.FontKey.J10, color=RED if red else BLACK, anchor="mt")
-
-
-def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
-    cal = calendar.Calendar(firstweekday=6)
-    weeks = cal.monthdatescalendar(year, month)
-    
-    # 4週の場合、次の月の最初の週を追加して5週にする
-    if len(weeks) == 4:
-        next_year, next_month = next_month_year(year, month)
-        next_weeks = cal.monthdatescalendar(next_year, next_month)
-        if next_weeks:
-            weeks.append(next_weeks[0])
-    
-    len_weeks = len(weeks)
-    date_h = DATE_H_5W if len_weeks == 5 else DATE_H_6W
-    weekdays_h = WEEKDAYS_H
-
-    main_cal_h = weekdays_h + date_h * len_weeks
-
-    y = HEIGHT - main_cal_h
-
-    # 曜日部分のグリッド
-    weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
-
-    for c, text in enumerate(weekdays):
-        cx = c * CAL_W
-        cy = y
-        cw = CAL_W_SATURDAY if c == 6 else CAL_W
-        ch = weekdays_h
-        draw_weekday_cell(draw, cx, cy, cw, ch, text, right=(c != 6), is_sunday=(c == 0))
-
-    # 日付部分のグリッド
-    for r, row in enumerate(weeks):
-        for c, date_obj in enumerate(row):
-            cx = c * CAL_W
-            cy = y + weekdays_h + r * date_h
-            cw = CAL_W_SATURDAY if c == 6 else CAL_W
-            ch = date_h
-
-            draw_date_cell(
-                draw,
-                cx,
-                cy,
-                cw,
-                ch,
-                date_obj,
-                month,
-                right=(c != 6),
-                is_sunday=(c == 0),
-            )
-
-    return main_cal_h
-
-
-def make_calendar(year: int, month: int, output_dir: str | Path = "calendars") -> Path:
-    next_year, next_month = next_month_year(year, month)
-
-    draw = Draw(WIDTH, HEIGHT)
-
-    # メインカレンダー
-    main_cal_h = draw_main_calendar(draw=draw, year=year, month=month)
-
-    # ヘッダ描画
-    draw_header(draw, year, month, main_cal_h)
-
-    # サブカレンダー
-    draw_sub_calendar(draw=draw, year=next_year, month=next_month, main_cal_h=main_cal_h)
-
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    out = output_dir / f"{year:04}_{month:02}.png"
-    draw.save(str(out), scale=8)
-    return out
-
-
-def requested_months(args: argparse.Namespace) -> list[tuple[int, int]]:
-    """CLI引数から重複のない年月を順番どおりに作る。"""
+def parse_months(args: argparse.Namespace) -> list[tuple[int, int]]:
+    """年月指定を検証し、重複を除いた年月一覧を返す。"""
     if args.month:
-        result = []
-        month_values = (
+        values = [
             item
             for group in args.month
             for item in (group if isinstance(group, list) else [group])
-        )
-        for value in month_values:
+        ]
+        months = []
+        for value in values:
             try:
                 year_text, month_text = value.split("-", 1)
                 year, month = int(year_text), int(month_text)
@@ -258,43 +31,73 @@ def requested_months(args: argparse.Namespace) -> list[tuple[int, int]]:
                 raise argparse.ArgumentTypeError(
                     f"年月は YYYY-MM で指定してください: {value}"
                 ) from exc
-            result.append((year, month))
-        return list(dict.fromkeys(result))
+            months.append((year, month))
+        return list(dict.fromkeys(months))
 
+    end = args.begin if args.end is None else args.end
     return [
         (year, month)
-        for year in range(args.begin, args.end + 1)
+        for year in range(args.begin, end + 1)
         for month in range(1, 13)
     ]
 
 
+def output_path(root: Path, layout: str, year: int, month: int, both: bool) -> Path:
+    directory = root / layout if both else root
+    return directory / f"{year:04}_{month:02}.png"
+
+
 def generate_calendars(args: argparse.Namespace) -> None:
-    output_root = Path(args.output)
-    for year, month in requested_months(args):
-        if args.layout in ("ezsign", "both"):
-            path = make_calendar(year, month, output_root / "ezsign" if args.layout == "both" else output_root)
-            print(path)
-        if args.layout in ("tepra", "both"):
-            path = output_root / "tepra" / f"{year:04}_{month:02}.png" if args.layout == "both" else output_root / f"{year:04}_{month:02}.png"
-            print(render_tepra(year, month, path))
+    root = Path(args.output)
+    layouts = ("ezsign", "tepra") if args.layout == "both" else (args.layout,)
+
+    for year, month in parse_months(args):
+        for layout in layouts:
+            path = output_path(root, layout, year, month, args.layout == "both")
+            print(LAYOUTS[layout](year, month, path))
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="EZ Sign / テプラ用カレンダーを生成します"
+    )
+    parser.add_argument(
+        "begin", type=int, nargs="?",
+        help="開始年（--month を使わない場合）",
+    )
+    parser.add_argument(
+        "end", type=int, nargs="?",
+        help="終了年（省略時は開始年）",
+    )
+    parser.add_argument(
+        "--month", action="append", nargs="+",
+        help="生成する年月（YYYY-MM）。複数指定可",
+    )
+    parser.add_argument(
+        "--layout", choices=("ezsign", "tepra", "both"), default="ezsign",
+        help="レイアウト（既定: ezsign）",
+    )
+    parser.add_argument(
+        "--output", type=Path,
+        default=Path(__file__).parent / "calendars",
+        help="出力ディレクトリ",
+    )
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if args.month and (args.begin is not None or args.end is not None):
+        parser.error("--month と開始年・終了年は同時に指定できません")
+    if not args.month and args.begin is None:
+        parser.error("開始年と終了年、または --month を指定してください")
+    if args.end is not None and args.begin is None:
+        parser.error("終了年を指定する場合は開始年も指定してください")
+
+    generate_calendars(args)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="EZ Sign / テプラ用カレンダーを生成します")
-    parser.add_argument("begin", type=int, nargs="?", help="開始年（--month を使わない場合）")
-    parser.add_argument("end", type=int, nargs="?", help="終了年（省略時は開始年）")
-    parser.add_argument("--month", nargs="+", help="生成する年月（YYYY-MM）。複数指定可")
-    parser.add_argument("--layout", choices=("ezsign", "tepra", "both"), default="ezsign",
-                        help="レイアウト（既定: ezsign）")
-    parser.add_argument("--output", default=Path(__file__).parent / "calendars",
-                        type=Path, help="出力ディレクトリ")
-    args = parser.parse_args()
-
-    if not args.month and args.begin is None:
-        parser.error("開始年と終了年、または --month を指定してください")
-    if args.month is None:
-        args.end = args.begin if args.end is None else args.end
-    elif args.begin is not None or args.end is not None:
-        parser.error("--month と開始年・終了年は同時に指定できません")
-
-    generate_calendars(args)
+    main()
