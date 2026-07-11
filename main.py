@@ -1,10 +1,12 @@
 import calendar
+
 import datetime
 import argparse
-import os
 from functools import partial
+from pathlib import Path
 
 from draw import Draw
+from tepra import render as render_tepra
 from calendar_meta import (
     get_jp_era,
     get_eto,
@@ -13,8 +15,8 @@ from calendar_meta import (
     get_national_holiday,
     get_sekki,
     get_zassetsu,
-    next_month_year,
     get_moon_phase_type,
+    next_month_year,
 )
 
 WIDTH = 400
@@ -35,15 +37,6 @@ SUB_DATE_H_6W = 11
 # 色
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
-
-
-def next_month_year(year: int, month: int) -> tuple[int, int]:
-    nm = month + 1
-    ny = year
-    if nm > 12:
-        nm = 1
-        ny += 1
-    return ny, nm
 
 
 def draw_header(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
@@ -225,7 +218,7 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
     return main_cal_h
 
 
-def make_calendar(year: int, month: int) -> None:
+def make_calendar(year: int, month: int, output_dir: str | Path = "calendars") -> Path:
     next_year, next_month = next_month_year(year, month)
 
     draw = Draw(WIDTH, HEIGHT)
@@ -239,20 +232,69 @@ def make_calendar(year: int, month: int) -> None:
     # サブカレンダー
     draw_sub_calendar(draw=draw, year=next_year, month=next_month, main_cal_h=main_cal_h)
 
-    output_dir = os.path.join(os.path.dirname(__file__), "calendars")
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    out = output_dir / f"{year:04}_{month:02}.png"
+    draw.save(str(out), scale=8)
+    return out
 
-    out = os.path.join(output_dir, f"{year:04}_{month:02}.png")
-    draw.save(out, scale=8)
-    print(out)
+
+def requested_months(args: argparse.Namespace) -> list[tuple[int, int]]:
+    """CLI引数から重複のない年月を順番どおりに作る。"""
+    if args.month:
+        result = []
+        month_values = (
+            item
+            for group in args.month
+            for item in (group if isinstance(group, list) else [group])
+        )
+        for value in month_values:
+            try:
+                year_text, month_text = value.split("-", 1)
+                year, month = int(year_text), int(month_text)
+                if not 1 <= month <= 12:
+                    raise ValueError
+            except ValueError as exc:
+                raise argparse.ArgumentTypeError(
+                    f"年月は YYYY-MM で指定してください: {value}"
+                ) from exc
+            result.append((year, month))
+        return list(dict.fromkeys(result))
+
+    return [
+        (year, month)
+        for year in range(args.begin, args.end + 1)
+        for month in range(1, 13)
+    ]
+
+
+def generate_calendars(args: argparse.Namespace) -> None:
+    output_root = Path(args.output)
+    for year, month in requested_months(args):
+        if args.layout in ("ezsign", "both"):
+            path = make_calendar(year, month, output_root / "ezsign" if args.layout == "both" else output_root)
+            print(path)
+        if args.layout in ("tepra", "both"):
+            path = output_root / "tepra" / f"{year:04}_{month:02}.png" if args.layout == "both" else output_root / f"{year:04}_{month:02}.png"
+            print(render_tepra(year, month, path))
 
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser()
-    p.add_argument("begin", type=int)
-    p.add_argument("end", type=int)
-    a = p.parse_args()
+    parser = argparse.ArgumentParser(description="EZ Sign / テプラ用カレンダーを生成します")
+    parser.add_argument("begin", type=int, nargs="?", help="開始年（--month を使わない場合）")
+    parser.add_argument("end", type=int, nargs="?", help="終了年（省略時は開始年）")
+    parser.add_argument("--month", nargs="+", help="生成する年月（YYYY-MM）。複数指定可")
+    parser.add_argument("--layout", choices=("ezsign", "tepra", "both"), default="ezsign",
+                        help="レイアウト（既定: ezsign）")
+    parser.add_argument("--output", default=Path(__file__).parent / "calendars",
+                        type=Path, help="出力ディレクトリ")
+    args = parser.parse_args()
 
-    for year in range(a.begin, a.end+1):
-        for month in range(1, 13):
-            make_calendar(year, month)
+    if not args.month and args.begin is None:
+        parser.error("開始年と終了年、または --month を指定してください")
+    if args.month is None:
+        args.end = args.begin if args.end is None else args.end
+    elif args.begin is not None or args.end is not None:
+        parser.error("--month と開始年・終了年は同時に指定できません")
+
+    generate_calendars(args)
