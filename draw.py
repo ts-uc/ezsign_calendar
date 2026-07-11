@@ -206,8 +206,15 @@ class Draw:
         self.draw.ellipse(bbox, outline=(0, 0, 0))
 
 
-    def save(self, out: str):
-        self.img.save(out)
+    def save(self, out: str, scale: int = 1):
+        if scale != 1:
+            scaled = self.img.resize(
+                (self.img.width * scale, self.img.height * scale),
+                resample=Image.NEAREST,
+            )
+            scaled.save(out)
+        else:
+            self.img.save(out)
 
 
 def read_font(path: str, size: int) -> ImageFont.FreeTypeFont:

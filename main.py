@@ -243,7 +243,7 @@ def make_calendar(year: int, month: int) -> None:
     os.makedirs(output_dir, exist_ok=True)
 
     out = os.path.join(output_dir, f"{year:04}_{month:02}.png")
-    draw.save(out)
+    draw.save(out, scale=8)
     print(out)
 
 
