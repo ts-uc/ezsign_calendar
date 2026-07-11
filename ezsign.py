@@ -25,7 +25,7 @@ CAL_W_SATURDAY = 58
 DATE_H_5W = 40
 DATE_H_6W = 34
 WEEKDAYS_H = 17
-SUB_CAL_W = 18
+SUB_DATE_W = 18
 SUB_DATE_H_5W = 12
 SUB_DATE_H_6W = 11
 BLACK = (0, 0, 0)
@@ -88,19 +88,19 @@ def draw_date_cell(draw: Draw, x: int, y: int, width: int, height: int, date: da
 
 
 def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
-    x = WIDTH - SUB_CAL_W * 7 - 5
+    x = WIDTH - SUB_DATE_W * 7 - 5
     weeks = calendar.Calendar(firstweekday=6).monthdatescalendar(year, month)
     rows = 5 if len(weeks) <= 5 else 6
     date_height = SUB_DATE_H_5W if rows == 5 else SUB_DATE_H_6W
     y = (HEIGHT - main_cal_h - (date_height + date_height * rows) + 1) // 2
     draw.draw_text(x=x - 3, y=y, text=str(month), font_key=draw.FontKey.J15, anchor="rt")
     for column, text in enumerate(("S", "M", "T", "W", "T", "F", "S")):
-        draw.draw_text(x=x + column * SUB_CAL_W + SUB_CAL_W // 2, y=y, text=text, font_key=draw.FontKey.J10, color=RED if column == 0 else BLACK, anchor="mt")
+        draw.draw_text(x=x + column * SUB_DATE_W + SUB_DATE_W // 2, y=y, text=text, font_key=draw.FontKey.J10, color=RED if column == 0 else BLACK, anchor="mt")
     for row, dates in enumerate(weeks):
         for column, date in enumerate(dates):
             if date.month != month:
                 continue
-            draw.draw_text(x=x + column * SUB_CAL_W + SUB_CAL_W // 2, y=y + date_height + row * date_height, text=str(date.day), font_key=draw.FontKey.J10, color=RED if column == 0 or is_national_holiday(date) else BLACK, anchor="mt")
+            draw.draw_text(x=x + column * SUB_DATE_W + SUB_DATE_W // 2, y=y + date_height + row * date_height, text=str(date.day), font_key=draw.FontKey.J10, color=RED if column == 0 or is_national_holiday(date) else BLACK, anchor="mt")
 
 
 def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
