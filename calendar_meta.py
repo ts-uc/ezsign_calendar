@@ -46,6 +46,13 @@ def to_zenkaku(s: str) -> str:
         "０１２３４５６７８９"
     ))
 
+def previous_month_year(year: int, month: int) -> tuple[int, int]:
+    nm = month - 1
+    ny = year
+    if nm < 1:
+        nm = 12
+        ny -= 1
+    return ny, nm
 
 def next_month_year(year: int, month: int) -> tuple[int, int]:
     nm = month + 1
@@ -54,7 +61,6 @@ def next_month_year(year: int, month: int) -> tuple[int, int]:
         nm = 1
         ny += 1
     return ny, nm
-
 
 def get_jp_era(date: datetime.date) -> str:
     era_name = EraDate.from_date(date).strftime("%-K")
