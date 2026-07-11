@@ -14,23 +14,26 @@ pip install -r requirements.txt
 年の範囲を指定すると、各年の 1 月から 12 月までを一度に生成します。
 
 ```bash
-# EZ Sign 版（既定）
+# 登録されている全種類を生成（既定）
 python main.py 2025 2026
 
-# テプラ版
+# EZ Sign版だけを生成
+python main.py 2025 2026 --layout ezsign
+
+# テプラ版だけを生成
 python main.py 2025 2026 --layout tepra
 
-# 両方を生成（出力先を分ける）
-python main.py 2025 2026 --layout both --output ./output
+# 出力先を変更する場合
+python main.py 2025 2026 --output ./calendars
 ```
 
 必要な月だけをまとめて指定できます。重複した年月は一度だけ生成します。
 
 ```bash
-python main.py --month 2025-01 2025-03 2026-12 --layout both
+python main.py --month 2025-01 2025-03 2026-12 --layout all
 ```
 
-出力先は通常 `calendars/YYYY_MM.png` です。`both` の場合は、指定した出力先の `ezsign/` と `tepra/` に分けて保存します。
+出力先は通常 `calendars/ezsign/YYYY_MM.png` と `calendars/tepra/YYYY_MM.png` です。レイアウトを指定した場合は、指定レイアウトの画像だけを `calendars/YYYY_MM.png` に保存します。レイアウトを省略するか `--layout all` を指定すると、`LAYOUTS` に登録された全種類を生成します。
 
 ## ファイル構成
 

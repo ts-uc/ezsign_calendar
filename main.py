@@ -42,18 +42,20 @@ def parse_months(args: argparse.Namespace) -> list[tuple[int, int]]:
     ]
 
 
-def output_path(root: Path, layout: str, year: int, month: int, both: bool) -> Path:
-    directory = root / layout if both else root
+def output_path(root: Path, layout: str, year: int, month: int, all_layouts: bool) -> Path:
+    directory = root / layout if all_layouts else root
     return directory / f"{year:04}_{month:02}.png"
 
 
 def generate_calendars(args: argparse.Namespace) -> None:
     root = Path(args.output)
-    layouts = ("ezsign", "tepra") if args.layout == "both" else (args.layout,)
+    # all は LAYOUTS に登録された全カレンダーを対象にする。
+    # 新しいカレンダーを追加した場合も、ここを変更する必要はない。
+    layouts = tuple(LAYOUTS) if args.layout == "all" else (args.layout,)
 
     for year, month in parse_months(args):
         for layout in layouts:
-            path = output_path(root, layout, year, month, args.layout == "both")
+            path = output_path(root, layout, year, month, args.layout == "all")
             print(LAYOUTS[layout](year, month, path))
 
 
@@ -74,8 +76,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="生成する年月（YYYY-MM）。複数指定可",
     )
     parser.add_argument(
-        "--layout", choices=("ezsign", "tepra", "both"), default="ezsign",
-        help="レイアウト（既定: ezsign）",
+        "--layout", choices=("ezsign", "tepra", "all"), default="all",
+        help="レイアウト。省略時は全種類を生成",
     )
     parser.add_argument(
         "--output", type=Path,
