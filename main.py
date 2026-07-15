@@ -44,7 +44,7 @@ def parse_months(args: argparse.Namespace) -> list[tuple[int, int]]:
 
 def output_path(root: Path, layout: str, year: int, month: int, all_layouts: bool) -> Path:
     directory = root / layout if all_layouts else root
-    return directory / f"{year:04}_{month:02}.png"
+    return directory / f"{layout}_{year:04}_{month:02}.png"
 
 
 def generate_calendars(args: argparse.Namespace) -> None:
