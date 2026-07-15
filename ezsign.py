@@ -33,14 +33,10 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
 
-def draw_header(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
-    header_h = HEIGHT - main_cal_h
-    char_h = 20+5+50
-    base_h = char_h + (header_h - char_h) // 2
-    date = datetime.date(year, month, 1)
-    draw.draw_text(x=WIDTH // 2, y= base_h, text=str(year), font_key=draw.FontKey.J15, anchor="mb")
+def draw_header(draw: Draw, year: int, month: int) -> None:
+    draw.draw_text(x=WIDTH // 2, y= 60, text=str(year), font_key=draw.FontKey.J15, anchor="mt")
     # draw.draw_text(x=80, y=header_h // 2 + 16, text=f"{get_jp_era(date)}年{get_eto(date)}", font_key=draw.FontKey.MISAKI, anchor="lm")
-    draw.draw_text(x=WIDTH // 2, y= base_h - 20, text=str(month), font_key=draw.FontKey.J25D, anchor="mb")
+    draw.draw_text(x=WIDTH // 2, y= 4, text=str(month), font_key=draw.FontKey.J25D, anchor="mt")
     # draw.draw_text(x=160, y=header_h // 2, text=calendar.month_abbr[month].upper(), font_key=draw.FontKey.J20, anchor="lm")
     # draw.draw_text(x=160, y=header_h // 2 + 16, text=get_traditional_month(month), font_key=draw.FontKey.MISAKI, anchor="lm")
 
@@ -90,20 +86,20 @@ def draw_date_cell(draw: Draw, x: int, y: int, width: int, height: int, date: da
         draw.draw_moon_phase(x=x + 40, y=y + 10, w=12, h=12, phase=moon)
 
 
-def draw_previous_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
+def draw_previous_calendar(draw: Draw, year: int, month: int) -> None:
     x = 5
-    draw_sub_calendar(draw, year, month, main_cal_h, x)
+    draw_sub_calendar(draw, year, month, x)
 
 
-def draw_next_calendar(draw: Draw, year: int, month: int, main_cal_h: int) -> None:
+def draw_next_calendar(draw: Draw, year: int, month: int) -> None:
     x = WIDTH - SUB_DATE_W * 7 - 5 - 17
-    draw_sub_calendar(draw, year, month, main_cal_h, x)
+    draw_sub_calendar(draw, year, month, x)
 
-def draw_sub_calendar(draw: Draw, year: int, month: int, main_cal_h: int, x: int) -> None:
+def draw_sub_calendar(draw: Draw, year: int, month: int, x: int) -> None:
     weeks = calendar.Calendar(firstweekday=6).monthdatescalendar(year, month)
     rows = 5 if len(weeks) <= 5 else 6
     date_height = SUB_DATE_H_5W if rows == 5 else SUB_DATE_H_6W
-    y = (HEIGHT - main_cal_h - (date_height + date_height * rows) + 1) // 2
+    y = 4
     draw.draw_text(x=x + 9, y=y, text=str(month), font_key=draw.FontKey.J15, anchor="mt")
     for column, text in enumerate(("S", "M", "T", "W", "T", "F", "S")):
         draw.draw_text(x=x + 17 + column * SUB_DATE_W + SUB_DATE_W // 2, y=y, text=text, font_key=draw.FontKey.J10, color=RED if column == 0 else BLACK, anchor="mt")
@@ -135,12 +131,12 @@ def draw_main_calendar(draw: Draw, year: int, month: int) -> int:
 def render(year: int, month: int, output: str | Path) -> Path:
     """EZ Sign 用カレンダーを1枚生成して保存する。"""
     draw = Draw(WIDTH, HEIGHT)
-    main_height = draw_main_calendar(draw, year, month)
-    draw_header(draw, year, month, main_height)
+    draw_main_calendar(draw, year, month)
+    draw_header(draw, year, month)
     previous_year, previous_month = previous_month_year(year, month)
-    draw_previous_calendar(draw, previous_year, previous_month, main_height)
+    draw_previous_calendar(draw, previous_year, previous_month)
     next_year, next_month = next_month_year(year, month)
-    draw_next_calendar(draw, next_year, next_month, main_height)
+    draw_next_calendar(draw, next_year, next_month)
     path = Path(output)
     path.parent.mkdir(parents=True, exist_ok=True)
     draw.save(str(path), scale=8)
