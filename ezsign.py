@@ -35,8 +35,8 @@ RED = (255, 0, 0)
 
 def draw_header(draw: Draw, year: int, month: int) -> None:
     draw.draw_text(x=WIDTH // 2, y= 4, text=str(month), font_key=draw.FontKey.J25D, anchor="mt")
-    draw.draw_dashed_line(150, 57, 250, 57)
-    draw.draw_text(x=WIDTH // 2, y= 60, text=str(year), font_key=draw.FontKey.J15, anchor="mt")
+    draw.draw_dashed_line(150, 58, 250, 58)
+    draw.draw_text(x=WIDTH // 2, y= 62, text=str(year), font_key=draw.FontKey.J15, anchor="mt")
 
 def draw_weekday_cell(draw: Draw, x: int, y: int, width: int, height: int, text: str, right: bool, sunday: bool) -> None:
     draw.draw_cell_line(x=x, y=y, w=width, h=height, top=True, right=right)
