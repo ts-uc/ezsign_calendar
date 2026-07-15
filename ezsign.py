@@ -34,12 +34,9 @@ RED = (255, 0, 0)
 
 
 def draw_header(draw: Draw, year: int, month: int) -> None:
-    draw.draw_text(x=WIDTH // 2, y= 60, text=str(year), font_key=draw.FontKey.J15, anchor="mt")
-    # draw.draw_text(x=80, y=header_h // 2 + 16, text=f"{get_jp_era(date)}年{get_eto(date)}", font_key=draw.FontKey.MISAKI, anchor="lm")
     draw.draw_text(x=WIDTH // 2, y= 4, text=str(month), font_key=draw.FontKey.J25D, anchor="mt")
-    # draw.draw_text(x=160, y=header_h // 2, text=calendar.month_abbr[month].upper(), font_key=draw.FontKey.J20, anchor="lm")
-    # draw.draw_text(x=160, y=header_h // 2 + 16, text=get_traditional_month(month), font_key=draw.FontKey.MISAKI, anchor="lm")
-
+    draw.draw_dashed_line(150, 57, 250, 57)
+    draw.draw_text(x=WIDTH // 2, y= 60, text=str(year), font_key=draw.FontKey.J15, anchor="mt")
 
 def draw_weekday_cell(draw: Draw, x: int, y: int, width: int, height: int, text: str, right: bool, sunday: bool) -> None:
     draw.draw_cell_line(x=x, y=y, w=width, h=height, top=True, right=right)
